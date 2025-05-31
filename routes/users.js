@@ -13,7 +13,7 @@ router.post("/login" , async (req,res) => {
     const {username,password} = req.body
 
     if (!username || !password) {
-        res.json({ message: "Username and password are required." });
+        return res.json({ message: "Username and password are required." });
     }
 
     try {
@@ -26,7 +26,7 @@ router.post("/login" , async (req,res) => {
                 res.json({message: "LOGGED IN"})
 
             else
-                res.json({message: "WRONG USER OR PASS"});
+                res.json({message: "WRONG USER OR PASS"})
 
         } else {
             res.json({message: "NO USER FOUND"})
@@ -39,14 +39,19 @@ router.post("/login" , async (req,res) => {
 
 router.post("/register" , async (req,res) => {
     const {username,password,role,flag,fname,mname,lname,pnumber,address} = req.body
-    const hash= await bcrypt.hash(password,13)    
-    // console.log(username,password,hash,role,flag,fname,mname,lname,pnumber,address)
+
+    if (!username || !password || !role || !flag|| !fname|| !mname|| !lname|| !pnumber|| !address) {
+        return res.json({ message: "Fill all necessary fields." })
+    }       
+
     try {
+        const hash= await bcrypt.hash(password,13) 
+
         await registerUser(username,hash,role,flag,fname,mname,lname,pnumber,address)
         
-        res.json({message: "REGISTERED SUCCESSFULLY"});
+        res.json({message: "REGISTERED SUCCESSFULLY"})
     } catch (error) {
-        console.log(error);        
+        console.log(error)
     }
 })
 

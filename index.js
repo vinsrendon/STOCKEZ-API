@@ -1,10 +1,6 @@
 const express = require("express")
 const cors = require("cors")
 
-// import express from 'express'
-// import cors from 'cors'
-
-
 const app = express()
 
 app.use(cors())
@@ -25,5 +21,6 @@ app.get("/", (req, res)=>{
 
 const userRouter = require("./routes/users.js")
 const expenseRouter = require("./routes/expenses.js")
+const inventoryRouter = require("./routes/inventory.js")
 
-app.use(userRouter , expenseRouter)
+app.use(userRouter , expenseRouter, inventoryRouter)

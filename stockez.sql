@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 31, 2025 at 01:13 AM
+-- Generation Time: May 31, 2025 at 08:21 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -28,6 +28,12 @@ DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `add_expense` (IN `description` TEXT, IN `amount` TEXT, IN `expense_date` DATE)   BEGIN
 
 INSERT INTO expenses(expense_decs,expense_amount,expense_date) VALUES(description,amount,expense_date);
+
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `add_SKU` (IN `pname` TEXT, IN `manufacturer` TEXT)   BEGIN
+
+INSERT INTO inventory(product_name,manufacturer) VALUES(pname,manufacturer);
 
 END$$
 
@@ -81,7 +87,73 @@ CREATE TABLE `expenses` (
 --
 
 INSERT INTO `expenses` (`expense_id`, `expense_decs`, `expense_amount`, `expense_date`) VALUES
-(1, 'test expense description', '3500', '2025-05-31');
+(1, 'test expense description', '3500', '2025-05-31'),
+(2, 'water bill', '1000', '2025-05-31'),
+(3, 'internet bill', '1500', '2025-05-31');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `inventory`
+--
+
+CREATE TABLE `inventory` (
+  `product_code` int(11) NOT NULL,
+  `product_name` text NOT NULL,
+  `manufacturer` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `inventory`
+--
+
+INSERT INTO `inventory` (`product_code`, `product_name`, `manufacturer`) VALUES
+(1, 'Coca Cola', 'The Coca Cola Company'),
+(2, 'Sprite', 'The Coca Cola Company'),
+(3, 'Minute Maid', 'The Coca Cola Company'),
+(5, 'Royal', 'The Coca Cola Company');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `inventory_logs`
+--
+
+CREATE TABLE `inventory_logs` (
+  `product_code` int(11) NOT NULL,
+  `stock_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `size` int(11) NOT NULL,
+  `unit` text NOT NULL,
+  `qty` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `items`
+--
+
+CREATE TABLE `items` (
+  `purhase_id` int(11) NOT NULL,
+  `variant_id` int(11) NOT NULL,
+  `qty` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `purchase_history`
+--
+
+CREATE TABLE `purchase_history` (
+  `purchase_id` int(11) NOT NULL,
+  `purchase_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `purchase_amount` int(11) NOT NULL,
+  `cashier` int(11) NOT NULL,
+  `purchase_total` double NOT NULL,
+  `amount_tendered` double NOT NULL,
+  `amount_change` double NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -129,6 +201,22 @@ INSERT INTO `users_info` (`uid`, `firstname`, `middlename`, `lastname`, `phone_n
 (1, 'marie', NULL, 'currie', '09123456788', 'LLC'),
 (2, 'john', NULL, 'doe', '09123456787', 'LLC');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `variant`
+--
+
+CREATE TABLE `variant` (
+  `v_id` int(11) NOT NULL,
+  `product_code` int(11) NOT NULL,
+  `variant_name` text NOT NULL,
+  `size` int(11) NOT NULL,
+  `unit` text NOT NULL,
+  `qty` int(11) NOT NULL,
+  `price` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -140,10 +228,28 @@ ALTER TABLE `expenses`
   ADD PRIMARY KEY (`expense_id`);
 
 --
+-- Indexes for table `inventory`
+--
+ALTER TABLE `inventory`
+  ADD PRIMARY KEY (`product_code`);
+
+--
+-- Indexes for table `purchase_history`
+--
+ALTER TABLE `purchase_history`
+  ADD PRIMARY KEY (`purchase_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`uid`);
+
+--
+-- Indexes for table `variant`
+--
+ALTER TABLE `variant`
+  ADD PRIMARY KEY (`v_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -153,13 +259,31 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `expense_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `expense_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `inventory`
+--
+ALTER TABLE `inventory`
+  MODIFY `product_code` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `purchase_history`
+--
+ALTER TABLE `purchase_history`
+  MODIFY `purchase_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `variant`
+--
+ALTER TABLE `variant`
+  MODIFY `v_id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
