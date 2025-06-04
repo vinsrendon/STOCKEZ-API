@@ -6,8 +6,10 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-app.listen(8080, ()=>{
-    console.log("server running on port http://localhost:8080/");
+const PORT = 8080;
+
+app.listen(PORT, ()=>{
+    console.log(`server running on port http://localhost:${PORT}/`);
 });
 
 

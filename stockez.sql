@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 31, 2025 at 08:21 AM
+-- Generation Time: Jun 04, 2025 at 05:28 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -25,9 +25,9 @@ DELIMITER $$
 --
 -- Procedures
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `add_expense` (IN `description` TEXT, IN `amount` TEXT, IN `expense_date` DATE)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `add_expense` (IN `biller` TEXT, IN `description` TEXT, IN `amount` TEXT, IN `expense_date` DATE)   BEGIN
 
-INSERT INTO expenses(expense_decs,expense_amount,expense_date) VALUES(description,amount,expense_date);
+INSERT INTO expenses(biller,expense_decs,expense_amount,expense_date) VALUES(biller,description,amount,expense_date);
 
 END$$
 
@@ -77,6 +77,7 @@ DELIMITER ;
 
 CREATE TABLE `expenses` (
   `expense_id` int(11) NOT NULL,
+  `biller` text NOT NULL,
   `expense_decs` text NOT NULL,
   `expense_amount` text NOT NULL,
   `expense_date` date NOT NULL
@@ -86,10 +87,12 @@ CREATE TABLE `expenses` (
 -- Dumping data for table `expenses`
 --
 
-INSERT INTO `expenses` (`expense_id`, `expense_decs`, `expense_amount`, `expense_date`) VALUES
-(1, 'test expense description', '3500', '2025-05-31'),
-(2, 'water bill', '1000', '2025-05-31'),
-(3, 'internet bill', '1500', '2025-05-31');
+INSERT INTO `expenses` (`expense_id`, `biller`, `expense_decs`, `expense_amount`, `expense_date`) VALUES
+(2, 'Metropolitan Cebu Water District', 'water bill', '1000', '2025-05-31'),
+(3, 'GLOBE TELECOM', 'internet bill', '1500', '2025-05-31'),
+(4, 'MACTAN ELECTRIC COMPANY', 'electricity bill', '3500', '2025-05-31'),
+(9, '', 'rent', '10000', '2025-05-30'),
+(12, 'MECO', 'electricity', '10000', '2025-04-30');
 
 -- --------------------------------------------------------
 
@@ -259,7 +262,7 @@ ALTER TABLE `variant`
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `expense_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `expense_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `inventory`

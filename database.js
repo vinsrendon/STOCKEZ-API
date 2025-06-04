@@ -32,8 +32,8 @@ export async function getExpenses(){
     return rows[0]
 }
 
-export async function addExpense(expense_desc,expense_amount,expense_date){
-    await pool.query(`CALL add_expense(?,?,?)`,[expense_desc,expense_amount,expense_date])    
+export async function addExpense(biller,expense_desc,expense_amount,expense_date){
+    await pool.query(`CALL add_expense(?,?,?,?)`,[biller,expense_desc,expense_amount,expense_date])    
 }
 
 //INVENTORY
