@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 04, 2025 at 05:28 PM
+-- Generation Time: Jul 29, 2025 at 08:35 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -246,7 +246,8 @@ ALTER TABLE `purchase_history`
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`uid`);
+  ADD PRIMARY KEY (`uid`),
+  ADD KEY `username_idx` (`username`);
 
 --
 -- Indexes for table `variant`

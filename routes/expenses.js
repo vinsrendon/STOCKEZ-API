@@ -11,10 +11,10 @@ router.post("/addexpense" , async (req,res) => {
     }
 
     try {
-        await addExpense(biller,expense_description,expense_amount,expense_date)        
+        await addExpense(biller,expense_description,expense_amount,expense_date)
         res.json({message: "EXPENSE ADDED SUCCESSFULLY"})
     } catch (error) {
-        console.log(error);        
+        console.log(error);
     }
 })
 
@@ -23,7 +23,7 @@ router.get("/getexpense" , async (req,res) => {
         const expenses = await getExpenses()
         res.json(expenses);
     } catch (error) {
-        console.log(error);        
+        console.log(error);
     }
 })
 
