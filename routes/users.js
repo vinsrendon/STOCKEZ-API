@@ -39,9 +39,9 @@ router.post("/login" , async (req,res) => {
 })
 
 router.post("/register" , async (req,res) => {
-    const {username,password,role,flag,fname,mname,lname,pnumber,address} = req.body
+    const {username,password,role,flag,fname,mname,lname,pnumber,address} = req.body    
 
-    if (!username || !password || !role || !flag|| !fname|| !mname|| !lname|| !pnumber|| !address) {
+    if (!username || !password || !role || !flag|| !fname || !lname|| !pnumber|| !address) {
         return res.json({ message: "Fill all necessary fields." })
     }       
 
