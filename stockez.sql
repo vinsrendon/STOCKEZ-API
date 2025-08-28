@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 29, 2025 at 08:35 AM
+-- Generation Time: Aug 28, 2025 at 09:00 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -39,7 +39,13 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_expense` ()   BEGIN
 
-SELECT * FROM expenses;
+SELECT 
+expense_id,
+biller,
+expense_decs,
+expense_amount,
+DATE_FORMAT(expense_date, '%Y-%m-%d') AS formatted_expense_date
+FROM expenses;
 
 
 END$$
@@ -145,6 +151,23 @@ CREATE TABLE `items` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `products`
+--
+
+CREATE TABLE `products` (
+  `id` int(11) NOT NULL,
+  `product_code` bigint(20) NOT NULL,
+  `description` text NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `UOM` int(11) NOT NULL,
+  `price` double NOT NULL,
+  `date added` datetime NOT NULL DEFAULT current_timestamp(),
+  `expiration date` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `purchase_history`
 --
 
@@ -179,7 +202,8 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`uid`, `username`, `password`, `role`, `creation_date`, `status`) VALUES
 (1, 'test2', '$2b$13$mrzf8m0mqxADs.HOV9hTZuOEJDA8lCwTGZyCrK7HrLOiQQtcOwkiq', 1, '2025-05-30 22:39:25', 1),
-(2, 'test3', '$2b$13$yQGJj3gylXYi/oL2LwCcR.Sa5qqEmOmDF6IU7498LwaZKWeDs6/WK', 1, '2025-05-30 22:39:53', 1);
+(2, 'test3', '$2b$13$yQGJj3gylXYi/oL2LwCcR.Sa5qqEmOmDF6IU7498LwaZKWeDs6/WK', 1, '2025-05-30 22:39:53', 1),
+(3, 'admin1', '$2b$13$44NfjeVN0IdgoIUkCn9VQef4A9LTdZg1qws.2Nb5geECtz0fbm2K2', 0, '2025-07-29 09:36:40', 1);
 
 -- --------------------------------------------------------
 
@@ -202,7 +226,8 @@ CREATE TABLE `users_info` (
 
 INSERT INTO `users_info` (`uid`, `firstname`, `middlename`, `lastname`, `phone_number`, `address`) VALUES
 (1, 'marie', NULL, 'currie', '09123456788', 'LLC'),
-(2, 'john', NULL, 'doe', '09123456787', 'LLC');
+(2, 'john', NULL, 'doe', '09123456787', 'LLC'),
+(3, 'admin', 'admin', 'admin', '09923456786', 'Gabi Cordova Cebu');
 
 -- --------------------------------------------------------
 
@@ -235,6 +260,13 @@ ALTER TABLE `expenses`
 --
 ALTER TABLE `inventory`
   ADD PRIMARY KEY (`product_code`);
+
+--
+-- Indexes for table `products`
+--
+ALTER TABLE `products`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `product_code` (`product_code`);
 
 --
 -- Indexes for table `purchase_history`
@@ -272,6 +304,12 @@ ALTER TABLE `inventory`
   MODIFY `product_code` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
+-- AUTO_INCREMENT for table `products`
+--
+ALTER TABLE `products`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `purchase_history`
 --
 ALTER TABLE `purchase_history`
@@ -281,7 +319,7 @@ ALTER TABLE `purchase_history`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `variant`

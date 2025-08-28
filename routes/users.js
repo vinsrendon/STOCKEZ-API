@@ -1,13 +1,14 @@
 const express = require("express")
 const bcrypt = require("bcrypt")
+const crypto = require('crypto')
 const router = express.Router()
 
 const  { getUsers , registerUser, loginUser } = require('../database.js')
 
-// router.get('/users' , async (req,res) => {
-//     const users = await getUsers()
-//     res.json(users);
-// })
+router.get('/users' , async (req,res) => {
+    const users = await getUsers()
+    res.json(users);
+})
 
 router.post("/login" , async (req,res) => {
     // console.log(req.body)
@@ -23,9 +24,15 @@ router.post("/login" , async (req,res) => {
         if (user[0]) {
             const isValid = await bcrypt.compare(password,user[0].password)
 
-            if(isValid)
-                return res.json({status:"200",message: "LOGGED IN", token: "ed19587020b92b9ccef8e7483bda1b0eac4b02418e62058939e980d7655d2edc3d68cdc6c24eae3d5672bea044a9d1c4c44077bfb88a54167fe398b924707039"})
+            if(isValid){
+                const generateRandomToken = (length = 64, encoding = 'hex') => {
+                    return crypto.randomBytes(length).toString(encoding);
+                };
 
+                const myToken = generateRandomToken();
+
+                return res.json({status:"200",message: "LOGGED IN", token: myToken})
+            }
             else
                 return res.json({status:"401", message: "WRONG USER OR PASS"})
 
