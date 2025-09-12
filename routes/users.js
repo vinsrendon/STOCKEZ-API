@@ -49,7 +49,7 @@ router.post("/register" , async (req,res) => {
     const {username,password,role,flag,fname,mname,lname,pnumber,address} = req.body    
 
     if (!username || !password || !role || !flag|| !fname || !lname|| !pnumber|| !address) {
-        return res.json({ message: "Fill all necessary fields." })
+        return res.json({status:"201", message: "Fill all necessary fields." })
     }       
 
     try {
@@ -57,7 +57,7 @@ router.post("/register" , async (req,res) => {
 
         await registerUser(username,hash,role,flag,fname,mname,lname,pnumber,address)
         
-        res.json({message: "REGISTERED SUCCESSFULLY"})
+        res.json({status:"200",message: "REGISTERED SUCCESSFULLY"})
     } catch (error) {
         console.log(error)
     }
