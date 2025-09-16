@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 28, 2025 at 09:00 AM
+-- Generation Time: Sep 14, 2025 at 04:46 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -203,7 +203,9 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`uid`, `username`, `password`, `role`, `creation_date`, `status`) VALUES
 (1, 'test2', '$2b$13$mrzf8m0mqxADs.HOV9hTZuOEJDA8lCwTGZyCrK7HrLOiQQtcOwkiq', 1, '2025-05-30 22:39:25', 1),
 (2, 'test3', '$2b$13$yQGJj3gylXYi/oL2LwCcR.Sa5qqEmOmDF6IU7498LwaZKWeDs6/WK', 1, '2025-05-30 22:39:53', 1),
-(3, 'admin1', '$2b$13$44NfjeVN0IdgoIUkCn9VQef4A9LTdZg1qws.2Nb5geECtz0fbm2K2', 0, '2025-07-29 09:36:40', 1);
+(3, 'admin1', '$2b$13$44NfjeVN0IdgoIUkCn9VQef4A9LTdZg1qws.2Nb5geECtz0fbm2K2', 0, '2025-07-29 09:36:40', 1),
+(4, 'test4', '$2b$13$zufYbrImaQu1mYqZL08ZLuSeGtFoWOlKXgLNWlKEDO9M.qFZkLaR.', 1, '2025-08-28 08:30:32', 1),
+(5, 'test5', '$2b$13$kDUFsi4eeYlRKh5KwItn0.aoJ6f8yhFo22hgSKd6gyrzlqM5FEZL.', 1, '2025-08-28 08:35:41', 1);
 
 -- --------------------------------------------------------
 
@@ -227,7 +229,9 @@ CREATE TABLE `users_info` (
 INSERT INTO `users_info` (`uid`, `firstname`, `middlename`, `lastname`, `phone_number`, `address`) VALUES
 (1, 'marie', NULL, 'currie', '09123456788', 'LLC'),
 (2, 'john', NULL, 'doe', '09123456787', 'LLC'),
-(3, 'admin', 'admin', 'admin', '09923456786', 'Gabi Cordova Cebu');
+(3, 'admin', 'admin', 'admin', '09923456786', 'Gabi Cordova Cebu'),
+(4, 'john', 'mark', 'gabe', '09415121231', 'maribago llc'),
+(5, 'mark', 'john', 'mangubat', '09745124984', 'gabi cordova');
 
 -- --------------------------------------------------------
 
@@ -319,7 +323,7 @@ ALTER TABLE `purchase_history`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `variant`
