@@ -1,5 +1,10 @@
 const express = require("express")
 const router = express.Router()
+const jwt = require("jsonwebtoken")
+const dotenv = require('dotenv')
+
+dotenv.config()
+const SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 const  { addExpense ,getExpenses } = require('../database.js')
 
@@ -19,11 +24,20 @@ router.post("/addexpense" , async (req,res) => {
 })
 
 router.get("/getexpense" , async (req,res) => {
+    const token = req.cookies.token;
+    
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
     try {
+        try {
+            const decoded = jwt.verify(token, SECRET);
+        } catch (error) {
+            return res.status(401).json({ message: "Invalid token" });
+        }
         const expenses = await getExpenses()
-        res.json(expenses);
+        return res.json(expenses);
     } catch (error) {
-        console.log(error);
+        return console.log(error);
     }
 })
 
