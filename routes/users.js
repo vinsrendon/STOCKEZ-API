@@ -27,12 +27,11 @@ router.get('/users' , async (req,res) => {
     } 
     catch (err) {
         console.log(err);        
-        return res.status(500).json({ message: "Unexpected Error Occuered",error:err });
+        return res.status(500).json({ message: "Unexpected Error occurred",error:err });
     }    
 })
 
 router.post("/login" , async (req,res) => {
-    // console.log(req.body)
     const {username,password} = req.body
 
     if (!username || !password) {
@@ -64,8 +63,9 @@ router.post("/login" , async (req,res) => {
             return res.status(401).json({message: "NO USER FOUND"})
         }
 
-    } catch (error) {
-        console.log(error);
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Unexpected Error occurred",error:err });
     }
 })
 
