@@ -1,12 +1,11 @@
 const express = require("express")
 const bcrypt = require("bcrypt")
-// const crypto = require('crypto')
 const router = express.Router()
 const jwt = require("jsonwebtoken")
 const dotenv = require('dotenv')
+const {verifyToken} = require('./verify.js')
 
 dotenv.config()
-
 const SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 const  { getUsers , registerUser, loginUser } = require('../database.js')
@@ -15,12 +14,9 @@ router.get('/users' , async (req,res) => {
     const token = req.cookies.token;
 
     if (!token) return res.status(401).json({ message: "Unauthorized" });
+    
     try {
-        try {
-            const decoded = jwt.verify(token, SECRET);
-        } catch (err) {
-            return res.status(401).json({message:"Invalid Token"})
-        }
+        verifyToken(req,res);
         
         const users = await getUsers()
         return res.status(200).json(users);
@@ -75,39 +71,39 @@ router.post("/logout", (req, res) => {
 });
 
 router.post("/register" , async (req,res) => {
-    const token = req.cookies.token;
     const {username,password,role,flag,fname,mname,lname,pnumber,address} = req.body   
 
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-
     if (!username || !password || !role || !flag|| !fname || !lname|| !pnumber|| !address) {
-        return res.json({status:"201", message: "Fill all necessary fields." })
+        return res.status(200).json({message: "Fill all necessary fields." })
     }       
 
     try {
+        verifyToken(req,res)
+
         const hash = await bcrypt.hash(password,13) 
 
         await registerUser(username,hash,role,flag,fname,mname,lname,pnumber,address)
         
-        return res.json({status:"200",message: "REGISTERED SUCCESSFULLY"})
+        return res.status(200).json({message: "REGISTERED SUCCESSFULLY"})
     } catch (error) {
         return console.log(error)
     }
 })
 
 router.get("/verify", (req, res) => {
-  const token = req.cookies.token;
+    const token = req.cookies.token;
+  
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
 
-  if (!token) return res.status(401).json({ message: "Unauthorized" });
-
-  try {
-    const decoded = jwt.verify(token, SECRET);
-    
-    return res.status(200).json({message: "user verified", user: decoded});
-  } 
-  catch (err) {
-    return res.status(401).json({ message: "Invalid token" });
-  }
+    try {
+        const decoded = jwt.verify(token, SECRET);        
+        return res.status(200).json({message: "user verified", user: decoded});
+    } 
+    catch (err) {
+        return res.status(401).json({ message: "Invalid token" });
+    }
 });
+
+
 
 module.exports = router
