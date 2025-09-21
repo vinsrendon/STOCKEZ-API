@@ -2,6 +2,7 @@ const express = require("express")
 const router = express.Router()
 
 const  { addSKU , getSKU} = require('../database.js')
+const { verifyToken } = require("./verify.js")
 
 router.post("/addSKU" , async (req,res) => {
     const {product_name,manufacturer} = req.body
@@ -11,17 +12,26 @@ router.post("/addSKU" , async (req,res) => {
     }       
 
     try {
-        await addSKU(product_name,manufacturer)
-        
-        res.json({message: "SKU ADDED SUCCESSFULLY"})
-    } catch (error) {
-        console.log(error)
+        verifyToken(req,res)
+
+        await addSKU(product_name,manufacturer)        
+        res.status(200).json({message: "SKU ADDED SUCCESSFULLY"})
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
 })
 
 router.get('/getSKU' , async (req,res) => {
-    const sku = await getSKU()
-    res.json(sku);
+    try {
+        verifyToken(req,res)
+
+        const sku = await getSKU()
+        res.status(200).json(sku);
+    } catch (err) {
+        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+    
 })
 
 module.exports = router

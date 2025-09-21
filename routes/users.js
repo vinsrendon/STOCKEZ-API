@@ -11,9 +11,6 @@ const SECRET = process.env.ACCESS_TOKEN_SECRET;
 const  { getUsers , registerUser, loginUser } = require('../database.js')
 
 router.get('/users' , async (req,res) => {
-    const token = req.cookies.token;
-
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
     
     try {
         verifyToken(req,res);

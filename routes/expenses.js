@@ -8,16 +8,17 @@ router.post("/addexpense" , async (req,res) => {
     const {biller,expense_description,expense_amount,expense_date} = req.body
 
     if (!biller || !expense_description || !expense_amount || !expense_date) {
-        return res.json({ message: "Fill all necessary fields." })
+        return res.status(400).json({ message: "Fill all necessary fields." })
     }
 
     try {
         verifyToken(req,res)
 
         await addExpense(biller,expense_description,expense_amount,expense_date)
-        res.json({message: "EXPENSE ADDED SUCCESSFULLY"})
-    } catch (error) {
-        console.log(error);
+        res.status(200).json({message: "EXPENSE ADDED SUCCESSFULLY"})
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
 })
 
@@ -26,9 +27,10 @@ router.get("/getexpense" , async (req,res) => {
         verifyToken(req,res)
 
         const expenses = await getExpenses()
-        return res.json(expenses);
-    } catch (error) {
-        return console.log(error);
+        return res.status(200).json(expenses);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
 })
 
