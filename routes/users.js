@@ -28,7 +28,7 @@ router.post("/login" , async (req,res) => {
     const {username,password} = req.body
 
     if (!username || !password) {
-        return res.json({ message: "Username and password are required." });
+        return res.status(400).json({ message: "Username and password are required." });
     }
 
     try {
@@ -50,10 +50,10 @@ router.post("/login" , async (req,res) => {
                 return res.status(200).json({message: "LOGGED IN", username:user[0].username, role:user[0].role})
             }
             else
-                return res.status(401).json({message: "WRONG USER OR PASS"})
+                return res.status(203).json({message: "WRONG USER OR PASS"})
 
         } else {
-            return res.status(401).json({message: "NO USER FOUND"})
+            return res.status(203).json({message: "NO USER FOUND"})
         }
 
     } catch (err) {

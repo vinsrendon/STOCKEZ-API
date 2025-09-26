@@ -6,7 +6,15 @@ const cookieParser = require("cookie-parser")
 const app = express()
 
 app.use(cors({
-    origin:"http://localhost:5173",
+    // origin:'http://localhost:5173',
+    origin: function (origin, callback) {
+    // Allow any origin that ends with :5173
+    if (!origin || origin.match(/^http:\/\/.*:5173$/)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
     credentials:true
 }))
 app.use(express.json())
