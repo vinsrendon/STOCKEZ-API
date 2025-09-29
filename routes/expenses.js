@@ -6,6 +6,8 @@ const  { addExpense ,getExpenses } = require('../database.js')
 
 router.post("/addexpense" , async (req,res) => {
     const {biller,expense_description,expense_amount,expense_date} = req.body
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
 
     if (!biller || !expense_description || !expense_amount || !expense_date) {
         return res.status(400).json({ message: "Fill all necessary fields." })
@@ -23,6 +25,8 @@ router.post("/addexpense" , async (req,res) => {
 })
 
 router.get("/getexpense" , async (req,res) => {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
     try {
         verifyToken(req,res)
 

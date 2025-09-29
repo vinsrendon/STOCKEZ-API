@@ -17,6 +17,11 @@ export async function getUsers(){
     return rows[0]
 }
 
+export async function getUserById(uid){
+    const [rows] = await pool.query(`CALL get_user_by_id(?)`,[uid])
+    return rows[0]
+}
+
 export async function registerUser(user,pass,role,flag,fname,mname,lname,pnumber,address){    
     await pool.query(`CALL register(?,?,?,?,?,?,?,?,?)`,[user,pass,role,flag,fname,mname,lname,pnumber,address])    
 }
