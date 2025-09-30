@@ -6,8 +6,10 @@ const { verifyToken } = require("./verify.js")
 
 router.post("/addSKU" , async (req,res) => {
     const {product_name,manufacturer} = req.body
+
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ message: "Unauthorized" });
+
     if (!product_name || !manufacturer) {
         return res.json({ message: "Fill all necessary fields." })        
     }       
@@ -26,6 +28,7 @@ router.post("/addSKU" , async (req,res) => {
 router.get('/getSKU' , async (req,res) => {
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ message: "Unauthorized" });
+    
     try {
         verifyToken(req,res)
 

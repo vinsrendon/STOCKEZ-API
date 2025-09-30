@@ -8,7 +8,7 @@ const {verifyToken} = require('./verify.js')
 dotenv.config()
 const SECRET = process.env.ACCESS_TOKEN_SECRET;
 
-const  { getUsers , registerUser, loginUser, getUserById } = require('../database.js')
+const  { getUsers , registerUser, loginUser, getUserById, changeUserStatus } = require('../database.js')
 
 router.get('/users' , async (req,res) => {
     const token = req.cookies.token;
@@ -45,6 +45,24 @@ router.get('/userbyid' , async (req,res) => {
     }    
 })
 
+router.post('/changeuserstatus' , async (req,res) => {
+    const {uid} = req.body
+
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+        verifyToken(req,res);
+        
+        await changeUserStatus(uid)
+        return res.status(200).json({message:"User Status Successfully Changed"});
+    } 
+    catch (err) {
+        console.log(err);        
+        return res.status(500).json({ message: "Unexpected Error occurred",error:err });
+    }    
+})
+
 
 
 router.post("/login" , async (req,res) => {
@@ -57,7 +75,7 @@ router.post("/login" , async (req,res) => {
     try {
         const user = await loginUser(username)
         
-        if (user[0]) {
+        if (user[0] && user[0].status === 1) {
             const isValid = await bcrypt.compare(password,user[0].password)
 
             if(isValid){
@@ -75,7 +93,10 @@ router.post("/login" , async (req,res) => {
             else
                 return res.status(203).json({message: "WRONG USER OR PASS"})
 
-        } else {
+        } 
+        else if(user[0].status === 0)
+            return res.status(203).json({message: "USER DEACTIVATED"})
+        else {
             return res.status(203).json({message: "NO USER FOUND"})
         }
 
@@ -107,7 +128,9 @@ router.post("/register" , async (req,res) => {
         
         return res.status(200).json({message: "REGISTERED SUCCESSFULLY"})
     } catch (error) {
-        return console.log(error)
+        if(error.code === "ER_DUP_ENTRY") return res.status(400).json({message: "DUPLICATE ENTRY DETECTED"})
+        
+        else return res.status(500).json({message: "ERROR", error})        
     }
 })
 

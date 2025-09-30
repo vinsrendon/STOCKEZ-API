@@ -22,6 +22,10 @@ export async function getUserById(uid){
     return rows[0]
 }
 
+export async function changeUserStatus(uid){
+    await pool.query(`CALL change_user_status(?)`,[uid])
+}
+
 export async function registerUser(user,pass,role,flag,fname,mname,lname,pnumber,address){    
     await pool.query(`CALL register(?,?,?,?,?,?,?,?,?)`,[user,pass,role,flag,fname,mname,lname,pnumber,address])    
 }
