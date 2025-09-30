@@ -73,10 +73,12 @@ router.post("/login" , async (req,res) => {
     }
 
     try {
-        const user = await loginUser(username)
+        const user = await loginUser(username) 
         
-        if (user[0] && user[0].status === 1) {
+        if (user[0]) {
             const isValid = await bcrypt.compare(password,user[0].password)
+
+            if(user[0].status === 0) return res.status(203).json({message: "USER DEACTIVATED"})
 
             if(isValid){
                 const token = jwt.sign({ id: user[0].uid, user: user[0].username,role:user[0].role }, SECRET, { expiresIn: "12h" });
@@ -94,8 +96,6 @@ router.post("/login" , async (req,res) => {
                 return res.status(203).json({message: "WRONG USER OR PASS"})
 
         } 
-        else if(user[0].status === 0)
-            return res.status(203).json({message: "USER DEACTIVATED"})
         else {
             return res.status(203).json({message: "NO USER FOUND"})
         }

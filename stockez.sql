@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 30, 2025 at 09:34 AM
+-- Generation Time: Sep 30, 2025 at 12:40 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -31,9 +31,9 @@ INSERT INTO expenses(biller,expense_decs,expense_amount,expense_date) VALUES(bil
 
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `add_SKU` (IN `pname` TEXT, IN `manufacturer` TEXT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `add_products` (IN `i_barcode` VARCHAR(50), IN `i_name` VARCHAR(100), IN `i_description` TEXT)   BEGIN
 
-INSERT INTO inventory(product_name,manufacturer) VALUES(pname,manufacturer);
+INSERT INTO products(barcode,name,description) VALUES(i_barcode,i_name,i_description);
 
 END$$
 
@@ -110,59 +110,8 @@ CREATE TABLE `expenses` (
 --
 
 INSERT INTO `expenses` (`expense_id`, `biller`, `expense_decs`, `expense_amount`, `expense_date`) VALUES
-(2, 'Metropolitan Cebu Water District', 'water bill', '1000', '2025-05-31'),
-(3, 'GLOBE TELECOM', 'internet bill', '1500', '2025-05-31'),
-(4, 'MACTAN ELECTRIC COMPANY', 'electricity bill', '3500', '2025-05-31'),
-(9, '', 'rent', '10000', '2025-05-30'),
-(12, 'MECO', 'electricity', '10000', '2025-04-30');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `inventory`
---
-
-CREATE TABLE `inventory` (
-  `product_code` int(11) NOT NULL,
-  `product_name` text NOT NULL,
-  `manufacturer` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `inventory`
---
-
-INSERT INTO `inventory` (`product_code`, `product_name`, `manufacturer`) VALUES
-(1, 'Coca Cola', 'The Coca Cola Company'),
-(2, 'Sprite', 'The Coca Cola Company'),
-(3, 'Minute Maid', 'The Coca Cola Company'),
-(5, 'Royal', 'The Coca Cola Company');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `inventory_logs`
---
-
-CREATE TABLE `inventory_logs` (
-  `product_code` int(11) NOT NULL,
-  `stock_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `size` int(11) NOT NULL,
-  `unit` text NOT NULL,
-  `qty` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `items`
---
-
-CREATE TABLE `items` (
-  `purhase_id` int(11) NOT NULL,
-  `variant_id` int(11) NOT NULL,
-  `qty` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+(1, 'meco', 'electric bill', '2690', '2025-09-30'),
+(2, 'PLDT', 'internet', '1500', '2025-09-30');
 
 -- --------------------------------------------------------
 
@@ -171,14 +120,24 @@ CREATE TABLE `items` (
 --
 
 CREATE TABLE `products` (
-  `id` int(11) NOT NULL,
-  `product_code` bigint(20) NOT NULL,
-  `description` text NOT NULL,
-  `quantity` int(11) NOT NULL,
-  `UOM` int(11) NOT NULL,
-  `price` double NOT NULL,
-  `date added` datetime NOT NULL DEFAULT current_timestamp(),
-  `expiration date` datetime NOT NULL
+  `product_id` int(11) NOT NULL,
+  `barcode` varchar(50) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `description` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `product_batches`
+--
+
+CREATE TABLE `product_batches` (
+  `batch_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `manufacturing_date` int(11) NOT NULL,
+  `expiration_date` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -220,7 +179,7 @@ INSERT INTO `users` (`uid`, `username`, `password`, `role`, `creation_date`, `st
 (1, 'test2', '$2b$13$mrzf8m0mqxADs.HOV9hTZuOEJDA8lCwTGZyCrK7HrLOiQQtcOwkiq', 1, '2025-05-30 22:39:25', 1),
 (2, 'test3', '$2b$13$yQGJj3gylXYi/oL2LwCcR.Sa5qqEmOmDF6IU7498LwaZKWeDs6/WK', 1, '2025-05-30 22:39:53', 1),
 (3, 'admin1', '$2b$13$44NfjeVN0IdgoIUkCn9VQef4A9LTdZg1qws.2Nb5geECtz0fbm2K2', 0, '2025-07-29 09:36:40', 1),
-(9, 'test4', '$2b$13$FhU3Mfb0d0D9rEaMzni9uONb3eEF.vnL5NWzuzDiPYbBIJqJotyMO', 1, '2025-09-30 07:28:50', 1),
+(9, 'test4', '$2b$13$FhU3Mfb0d0D9rEaMzni9uONb3eEF.vnL5NWzuzDiPYbBIJqJotyMO', 1, '2025-09-30 09:47:08', 1),
 (10, 'test5', '$2b$13$1oqI5yfJiM0lXJYt/PVjSe4SvNJllkPV95M2ewzjTvzCjfAFQVWKO', 1, '2025-09-30 07:20:19', 1);
 
 -- --------------------------------------------------------
@@ -249,22 +208,6 @@ INSERT INTO `users_info` (`uid`, `firstname`, `middlename`, `lastname`, `phone_n
 (9, 'test4', 'test4', 'test4', '09783647236', 'gabi'),
 (10, 'test5', 'test5', 'test5', '09128462375', 'gabi');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `variant`
---
-
-CREATE TABLE `variant` (
-  `v_id` int(11) NOT NULL,
-  `product_code` int(11) NOT NULL,
-  `variant_name` text NOT NULL,
-  `size` int(11) NOT NULL,
-  `unit` text NOT NULL,
-  `qty` int(11) NOT NULL,
-  `price` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 --
 -- Indexes for dumped tables
 --
@@ -276,17 +219,17 @@ ALTER TABLE `expenses`
   ADD PRIMARY KEY (`expense_id`);
 
 --
--- Indexes for table `inventory`
---
-ALTER TABLE `inventory`
-  ADD PRIMARY KEY (`product_code`);
-
---
 -- Indexes for table `products`
 --
 ALTER TABLE `products`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `product_code` (`product_code`);
+  ADD PRIMARY KEY (`product_id`),
+  ADD UNIQUE KEY `barcode` (`barcode`);
+
+--
+-- Indexes for table `product_batches`
+--
+ALTER TABLE `product_batches`
+  ADD PRIMARY KEY (`batch_id`);
 
 --
 -- Indexes for table `purchase_history`
@@ -303,12 +246,6 @@ ALTER TABLE `users`
   ADD KEY `username_idx` (`username`);
 
 --
--- Indexes for table `variant`
---
-ALTER TABLE `variant`
-  ADD PRIMARY KEY (`v_id`);
-
---
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -316,19 +253,19 @@ ALTER TABLE `variant`
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `expense_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
-
---
--- AUTO_INCREMENT for table `inventory`
---
-ALTER TABLE `inventory`
-  MODIFY `product_code` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `expense_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `product_batches`
+--
+ALTER TABLE `product_batches`
+  MODIFY `batch_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `purchase_history`
@@ -341,12 +278,6 @@ ALTER TABLE `purchase_history`
 --
 ALTER TABLE `users`
   MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
-
---
--- AUTO_INCREMENT for table `variant`
---
-ALTER TABLE `variant`
-  MODIFY `v_id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
