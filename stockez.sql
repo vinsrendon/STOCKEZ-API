@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 30, 2025 at 12:40 PM
+-- Generation Time: Oct 01, 2025 at 01:02 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -31,9 +31,9 @@ INSERT INTO expenses(biller,expense_decs,expense_amount,expense_date) VALUES(bil
 
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `add_products` (IN `i_barcode` VARCHAR(50), IN `i_name` VARCHAR(100), IN `i_description` TEXT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `add_product` (IN `i_barcode` VARCHAR(50), IN `i_description` VARCHAR(100))   BEGIN
 
-INSERT INTO products(barcode,name,description) VALUES(i_barcode,i_name,i_description);
+INSERT INTO products(barcode,description) VALUES(i_barcode,i_description);
 
 END$$
 
@@ -53,8 +53,14 @@ biller,
 expense_decs,
 expense_amount,
 DATE_FORMAT(expense_date, '%Y-%m-%d') AS formatted_expense_date
-FROM expenses;
+FROM expenses ORDER BY expense_date DESC;
 
+
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_products` ()   BEGIN
+
+SELECT * FROM products;
 
 END$$
 
@@ -111,7 +117,8 @@ CREATE TABLE `expenses` (
 
 INSERT INTO `expenses` (`expense_id`, `biller`, `expense_decs`, `expense_amount`, `expense_date`) VALUES
 (1, 'meco', 'electric bill', '2690', '2025-09-30'),
-(2, 'PLDT', 'internet', '1500', '2025-09-30');
+(2, 'PLDT', 'internet', '1500', '2025-09-30'),
+(3, 'john doe', 'RENT', '10000', '2025-10-01');
 
 -- --------------------------------------------------------
 
@@ -122,9 +129,15 @@ INSERT INTO `expenses` (`expense_id`, `biller`, `expense_decs`, `expense_amount`
 CREATE TABLE `products` (
   `product_id` int(11) NOT NULL,
   `barcode` varchar(50) NOT NULL,
-  `name` varchar(100) NOT NULL,
   `description` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `products`
+--
+
+INSERT INTO `products` (`product_id`, `barcode`, `description`) VALUES
+(1, '4800016077913', '10 packs presto creams choco peanut butter');
 
 -- --------------------------------------------------------
 
@@ -179,7 +192,7 @@ INSERT INTO `users` (`uid`, `username`, `password`, `role`, `creation_date`, `st
 (1, 'test2', '$2b$13$mrzf8m0mqxADs.HOV9hTZuOEJDA8lCwTGZyCrK7HrLOiQQtcOwkiq', 1, '2025-05-30 22:39:25', 1),
 (2, 'test3', '$2b$13$yQGJj3gylXYi/oL2LwCcR.Sa5qqEmOmDF6IU7498LwaZKWeDs6/WK', 1, '2025-05-30 22:39:53', 1),
 (3, 'admin1', '$2b$13$44NfjeVN0IdgoIUkCn9VQef4A9LTdZg1qws.2Nb5geECtz0fbm2K2', 0, '2025-07-29 09:36:40', 1),
-(9, 'test4', '$2b$13$FhU3Mfb0d0D9rEaMzni9uONb3eEF.vnL5NWzuzDiPYbBIJqJotyMO', 1, '2025-09-30 09:47:08', 1),
+(9, 'test4', '$2b$13$FhU3Mfb0d0D9rEaMzni9uONb3eEF.vnL5NWzuzDiPYbBIJqJotyMO', 1, '2025-10-01 08:53:23', 0),
 (10, 'test5', '$2b$13$1oqI5yfJiM0lXJYt/PVjSe4SvNJllkPV95M2ewzjTvzCjfAFQVWKO', 1, '2025-09-30 07:20:19', 1);
 
 -- --------------------------------------------------------
@@ -253,13 +266,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `expense_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `expense_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `product_batches`

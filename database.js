@@ -46,13 +46,13 @@ export async function addExpense(biller,expense_desc,expense_amount,expense_date
 }
 
 //INVENTORY
-export async function addSKU(product_name,manufacturer){
-    await pool.query(`CALL add_SKU(?,?)`,[product_name,manufacturer])
+export async function addProduct(barcode,description){
+    await pool.query(`CALL add_product(?,?)`,[barcode,description])
 }
 
-export async function getSKU(){
-    const [sku] = await pool.query("SELECT * FROM inventory")
-    return sku
+export async function getProducts(){
+    const [products] = await pool.query(`CALL get_products()`)
+    return products[0]
 }
 
 
