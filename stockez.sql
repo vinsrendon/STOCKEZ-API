@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 01, 2025 at 10:57 PM
+-- Generation Time: Oct 02, 2025 at 05:45 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -137,9 +137,10 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`product_id`, `barcode`, `description`) VALUES
-(1, '4800016077913', '10 packs presto creams choco peanut butter'),
+(1, '4800016077913', '10 x 30g packs presto creams choco peanut butter'),
 (2, '4800092111822', '10 x 30g REBISCO CRACKERS PLAIN'),
-(5, '4800092113338', '1 x 30g REBISCO CRACKERS PLAIN');
+(5, '4800092113338', '1 x 30g REBISCO CRACKERS PLAIN'),
+(6, '4800016077906', '1 x 30g presto cream choco peanut butter');
 
 -- --------------------------------------------------------
 
@@ -274,7 +275,7 @@ ALTER TABLE `expenses`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `product_batches`
