@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 03, 2025 at 09:21 PM
+-- Generation Time: Oct 04, 2025 at 12:43 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -118,7 +118,8 @@ CREATE TABLE `expenses` (
 INSERT INTO `expenses` (`expense_id`, `biller`, `expense_decs`, `expense_amount`, `expense_date`) VALUES
 (1, 'meco', 'electric bill', '2690', '2025-09-30'),
 (2, 'PLDT', 'internet', '1500', '2025-09-30'),
-(3, 'john doe', 'RENT', '10000', '2025-10-01');
+(3, 'john doe', 'RENT', '10000', '2025-10-01'),
+(4, 'MCWD', 'water bill', '500', '2025-10-04');
 
 -- --------------------------------------------------------
 
@@ -151,9 +152,13 @@ INSERT INTO `products` (`product_id`, `barcode`, `description`) VALUES
 CREATE TABLE `product_batches` (
   `batch_id` int(11) NOT NULL,
   `product_id` int(11) NOT NULL,
-  `manufacturing_date` int(11) NOT NULL,
-  `expiration_date` int(11) NOT NULL,
-  `quantity` int(11) NOT NULL
+  `delivery_date` date NOT NULL,
+  `manufacturing_date` date NOT NULL,
+  `expiration_date` date NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `UOM` text NOT NULL,
+  `buy_price` decimal(10,0) NOT NULL,
+  `sell_price` decimal(10,0) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -195,8 +200,10 @@ INSERT INTO `users` (`uid`, `username`, `password`, `role`, `creation_date`, `st
 (1, 'test2', '$2b$13$mrzf8m0mqxADs.HOV9hTZuOEJDA8lCwTGZyCrK7HrLOiQQtcOwkiq', 1, '2025-05-30 22:39:25', 1),
 (2, 'test3', '$2b$13$yQGJj3gylXYi/oL2LwCcR.Sa5qqEmOmDF6IU7498LwaZKWeDs6/WK', 1, '2025-05-30 22:39:53', 1),
 (3, 'admin1', '$2b$13$44NfjeVN0IdgoIUkCn9VQef4A9LTdZg1qws.2Nb5geECtz0fbm2K2', 0, '2025-07-29 09:36:40', 1),
-(9, 'test4', '$2b$13$FhU3Mfb0d0D9rEaMzni9uONb3eEF.vnL5NWzuzDiPYbBIJqJotyMO', 1, '2025-10-03 19:19:38', 0),
-(10, 'test5', '$2b$13$1oqI5yfJiM0lXJYt/PVjSe4SvNJllkPV95M2ewzjTvzCjfAFQVWKO', 1, '2025-09-30 07:20:19', 1);
+(9, 'test4', '$2b$13$FhU3Mfb0d0D9rEaMzni9uONb3eEF.vnL5NWzuzDiPYbBIJqJotyMO', 1, '2025-10-04 10:40:04', 0),
+(10, 'test5', '$2b$13$1oqI5yfJiM0lXJYt/PVjSe4SvNJllkPV95M2ewzjTvzCjfAFQVWKO', 1, '2025-09-30 07:20:19', 1),
+(16, 'test6', '$2b$13$CNnTunc57vcq/THGjqrMPutNjrXpMKnxkNkWEQqBeq/Ifbh2AgUxG', 1, '2025-10-04 10:40:29', 1),
+(17, 'test7', '$2b$13$xyTwgRijMIQYw4/mEEhDGehEgmhb3AWKnm8tb5OokbZi.s57cn0Cy', 1, '2025-10-04 10:41:41', 1);
 
 -- --------------------------------------------------------
 
@@ -222,7 +229,9 @@ INSERT INTO `users_info` (`uid`, `firstname`, `middlename`, `lastname`, `phone_n
 (2, 'john', NULL, 'doe', '09123456787', 'LLC'),
 (3, 'admin', 'admin', 'admin', '09923456786', 'Gabi Cordova Cebu'),
 (9, 'test4', 'test4', 'test4', '09783647236', 'gabi'),
-(10, 'test5', 'test5', 'test5', '09128462375', 'gabi');
+(10, 'test5', 'test5', 'test5', '09128462375', 'gabi'),
+(16, 'test6', 'test6', 'test6', '09248273753', 'gabi'),
+(17, 'test7', 'test7', 'test7', '09128476237', 'gabi');
 
 --
 -- Indexes for dumped tables
@@ -269,7 +278,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `expense_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `expense_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -293,7 +302,7 @@ ALTER TABLE `purchase_history`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `uid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
