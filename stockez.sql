@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 04, 2025 at 12:43 PM
+-- Generation Time: Oct 09, 2025 at 04:30 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -93,6 +93,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `register` (IN `user` VARCHAR(50), I
  
  	INSERT into users_info(uid,firstname,middlename,lastname,phone_number,address) VALUES(new_user_id,fname,mname,lname,pnumber,address);
  
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `reset_user_password` (IN `user_id` INT, IN `user_pass` TEXT)   BEGIN
+
+UPDATE users 
+SET password = user_pass 
+WHERE uid = user_id;
+
 END$$
 
 DELIMITER ;

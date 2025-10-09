@@ -20,7 +20,7 @@ router.post("/addexpense" , async (req,res) => {
         await addExpense(biller,expense_description,expense_amount,expense_date)
         res.status(200).json({message: "EXPENSE ADDED SUCCESSFULLY"})
     } catch (err) {
-        console.log(err);
+        // console.log(err);
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
 })
@@ -36,7 +36,7 @@ router.get("/getexpense" , async (req,res) => {
         const expenses = await getExpenses()
         return res.status(200).json(expenses);
     } catch (err) {
-        console.log(err);
+        // console.log(err);
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
 })

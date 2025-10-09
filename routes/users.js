@@ -22,7 +22,7 @@ router.get('/users' , async (req,res) => {
         return res.status(200).json(filteredUsers);
     } 
     catch (err) {
-        console.log(err);        
+        // console.log(err);        
         return res.status(500).json({ message: "Unexpected Error occurred",error:err });
     }    
 })
@@ -40,7 +40,7 @@ router.get('/userbyid' , async (req,res) => {
         return res.status(200).json(user);
     } 
     catch (err) {
-        console.log(err);        
+        // console.log(err);        
         return res.status(500).json({ message: "Unexpected Error occurred",error:err });
     }    
 })
@@ -58,7 +58,7 @@ router.post('/changeuserstatus' , async (req,res) => {
         return res.status(200).json({message:"User Status Successfully Changed"});
     } 
     catch (err) {
-        console.log(err);        
+        // console.log(err);        
         return res.status(500).json({ message: "Unexpected Error occurred",error:err });
     }    
 })
@@ -131,6 +131,25 @@ router.post("/register" , async (req,res) => {
         if(error.code === "ER_DUP_ENTRY") return res.status(400).json({message: "DUPLICATE ENTRY DETECTED"})
         
         else return res.status(500).json({message: "ERROR", error})        
+    }
+})
+
+router.post("/resetpassword" , async (req,res) => {
+    const password = "password1"   
+    const uid = req.body  
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+    try {
+        verifyToken(req,res)
+
+        const hash = await bcrypt.hash(password,13) 
+
+        await resetUserPassword(uid,hash)
+        
+        return res.status(200).json({message: "PASSWORD RESET SUCCESSFULLY"})
+    } catch (error) {
+        return res.status(500).json({message: "ERROR", error})        
     }
 })
 

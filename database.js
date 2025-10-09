@@ -35,6 +35,10 @@ export async function loginUser(user){
     return result[0]
 }
 
+export async function resetUserPassword(uid,pass){
+    await pool.query(`CALL reset_user_password(?,?)`,[uid,pass])
+}
+
 // EXPENSES
 export async function getExpenses(){
     const [rows] = await pool.query(`CALL get_expense()`)
