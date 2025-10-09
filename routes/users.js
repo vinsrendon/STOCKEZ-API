@@ -8,7 +8,7 @@ const {verifyToken} = require('./verify.js')
 dotenv.config()
 const SECRET = process.env.ACCESS_TOKEN_SECRET;
 
-const  { getUsers , registerUser, loginUser, getUserById, changeUserStatus } = require('../database.js')
+const  { getUsers , registerUser, loginUser, getUserById, changeUserStatus, resetUserPassword} = require('../database.js')
 
 router.get('/users' , async (req,res) => {
     const token = req.cookies.token;
@@ -136,7 +136,7 @@ router.post("/register" , async (req,res) => {
 
 router.post("/resetpassword" , async (req,res) => {
     const password = "password1"   
-    const uid = req.body  
+    const {uid} = req.body  
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
