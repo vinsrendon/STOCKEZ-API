@@ -78,7 +78,7 @@ router.post("/login" , async (req,res) => {
         if (user[0]) {
             const isValid = await bcrypt.compare(password,user[0].password)
 
-            if(user[0].status === 0) return res.status(203).json({message: "USER DEACTIVATED"})
+            if(user[0].status === 0) return res.status(203).json({message: "NO USER FOUND"})//WHEN USER IS DEACTIVATED
 
             if(isValid){
                 const token = jwt.sign({ id: user[0].uid, user: user[0].username,role:user[0].role }, SECRET, { expiresIn: "12h" });

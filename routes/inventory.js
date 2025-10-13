@@ -1,7 +1,7 @@
 const express = require("express")
 const router = express.Router()
 
-const  { addProduct, getProducts} = require('../database.js')
+const  { addProduct, getProducts,addBatch,getBatch} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
 router.post("/addproduct" , async (req,res) => {
@@ -33,6 +33,36 @@ router.get('/getproducts' , async (req,res) => {
 
         const products = await getProducts()
         res.status(200).json(products);
+    } catch (err) {
+        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+    
+})
+
+router.post('/addbatch' , async (req,res) => {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+    
+    try {
+        verifyToken(req,res)
+
+        await addBatch()
+        res.status(200).json("BATCH ADDED SUCCESSFULLY");
+    } catch (err) {
+        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+    
+})
+
+router.get('/getbatch' , async (req,res) => {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+    
+    try {
+        verifyToken(req,res)
+
+        const batch = await getBatch()
+        res.status(200).json(batch);
     } catch (err) {
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
