@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 14, 2025 at 07:42 AM
+-- Generation Time: Oct 14, 2025 at 11:46 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -192,7 +192,9 @@ CREATE TABLE `product_batches` (
 --
 
 INSERT INTO `product_batches` (`batch_id`, `product_id`, `delivery_date`, `manufacturing_date`, `expiration_date`, `quantity`, `UOM`, `buy_price`, `sell_price`) VALUES
-(1, 1, '2025-10-14', '2025-10-08', '2026-10-08', 100, 'Packs', 65, 75);
+(1, 1, '2025-10-14', '2025-10-08', '2026-10-08', 100, 'Packs', 65, 75),
+(2, 2, '2025-10-15', '2025-10-09', '2026-10-08', 50, 'Packs', 70, 80),
+(3, 1, '2025-10-15', '2025-10-09', '2026-10-09', 100, 'Packs', 65, 75);
 
 -- --------------------------------------------------------
 
@@ -233,7 +235,7 @@ INSERT INTO `users` (`uid`, `username`, `password`, `role`, `creation_date`, `st
 (1, 'test2', '$2b$13$iJSfv6Y7mbzzY0vucHZIK.gWzM6dx0m6bz5cmallKIVG2k8CHsTuO', 1, '2025-10-09 22:31:46', 1),
 (2, 'test3', '$2b$13$yQGJj3gylXYi/oL2LwCcR.Sa5qqEmOmDF6IU7498LwaZKWeDs6/WK', 1, '2025-05-30 22:39:53', 1),
 (3, 'admin1', '$2b$13$44NfjeVN0IdgoIUkCn9VQef4A9LTdZg1qws.2Nb5geECtz0fbm2K2', 0, '2025-07-29 09:36:40', 1),
-(9, 'test4', '$2b$13$FhU3Mfb0d0D9rEaMzni9uONb3eEF.vnL5NWzuzDiPYbBIJqJotyMO', 1, '2025-10-12 19:56:34', 0),
+(9, 'test4', '$2b$13$FhU3Mfb0d0D9rEaMzni9uONb3eEF.vnL5NWzuzDiPYbBIJqJotyMO', 1, '2025-10-14 20:31:31', 0),
 (10, 'test5', '$2b$13$1oqI5yfJiM0lXJYt/PVjSe4SvNJllkPV95M2ewzjTvzCjfAFQVWKO', 1, '2025-09-30 07:20:19', 1),
 (16, 'test6', '$2b$13$CNnTunc57vcq/THGjqrMPutNjrXpMKnxkNkWEQqBeq/Ifbh2AgUxG', 1, '2025-10-04 10:40:29', 1),
 (17, 'test7', '$2b$13$xyTwgRijMIQYw4/mEEhDGehEgmhb3AWKnm8tb5OokbZi.s57cn0Cy', 1, '2025-10-04 10:41:41', 1);
@@ -323,7 +325,7 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT for table `product_batches`
 --
 ALTER TABLE `product_batches`
-  MODIFY `batch_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `batch_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `purchase_history`
