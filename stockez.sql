@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 13, 2025 at 04:37 PM
+-- Generation Time: Oct 14, 2025 at 07:42 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -39,7 +39,7 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `add_product_batch` (IN `pid` INT, IN `dDate` DATE, IN `mDate` DATE, IN `eDate` DATE, IN `qty` INT, IN `UOM` TEXT, IN `bp` DECIMAL, IN `sp` DECIMAL)   BEGIN
 
-INSERT INTO products_batches(product_id,delivery_date,manufacturing_date,expiration_date,quantity,UOM,buy_price,sell_price) VALUES(pid,dDate,mDate,eDate,qty,UOM,bp,sp);
+INSERT INTO product_batches(product_id,delivery_date,manufacturing_date,expiration_date,quantity,UOM,buy_price,sell_price) VALUES(pid,dDate,mDate,eDate,qty,UOM,bp,sp);
 
 END$$
 
@@ -72,7 +72,12 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_product_batch` (IN `pid` INT)   BEGIN
 
-SELECT * FROM product_batches WHERE product_id =pid;
+SELECT * ,
+DATE_FORMAT(delivery_date, '%Y-%m-%d') AS delivery_date,
+DATE_FORMAT(manufacturing_date, '%Y-%m-%d') AS manufacturing_date,
+DATE_FORMAT(expiration_date, '%Y-%m-%d') AS expiration_date
+FROM product_batches 
+WHERE product_id =pid;
 
 END$$
 
@@ -181,6 +186,13 @@ CREATE TABLE `product_batches` (
   `buy_price` decimal(10,0) NOT NULL,
   `sell_price` decimal(10,0) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `product_batches`
+--
+
+INSERT INTO `product_batches` (`batch_id`, `product_id`, `delivery_date`, `manufacturing_date`, `expiration_date`, `quantity`, `UOM`, `buy_price`, `sell_price`) VALUES
+(1, 1, '2025-10-14', '2025-10-08', '2026-10-08', 100, 'Packs', 65, 75);
 
 -- --------------------------------------------------------
 
@@ -311,7 +323,7 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT for table `product_batches`
 --
 ALTER TABLE `product_batches`
-  MODIFY `batch_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `batch_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `purchase_history`

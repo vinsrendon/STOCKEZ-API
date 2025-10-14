@@ -11,6 +11,16 @@ const pool = mysql2.createPool({
     database: process.env.MYSQL_DATABASE
 }).promise()
 
+async function checkConnection() {
+  try {
+    const [rows] = await pool.query('SELECT 1');
+    console.log('Database connected successfully!');
+  } catch (error) {
+    console.error('Database connection failed:', error.message);
+  }
+}
+checkConnection();
+
 //USERS
 export async function getUsers(){
     const [rows] = await pool.query(`CALL get_users()`)

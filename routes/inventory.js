@@ -40,13 +40,15 @@ router.get('/getproducts' , async (req,res) => {
 })
 
 router.post('/addbatch' , async (req,res) => {
+    const {pid,dDate,mDate,eDate,qty,uom,bp,sp} = req.body
+    
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ message: "Unauthorized" });
     
     try {
         verifyToken(req,res)
 
-        await addBatch()
+        await addBatch(pid,dDate,mDate,eDate,qty,uom,bp,sp)
         res.status(200).json("BATCH ADDED SUCCESSFULLY");
     } catch (err) {
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
@@ -54,14 +56,16 @@ router.post('/addbatch' , async (req,res) => {
     
 })
 
-router.get('/getbatch' , async (req,res) => {
+router.post('/getbatch' , async (req,res) => {
+    const {pid} = req.body
+
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ message: "Unauthorized" });
     
     try {
         verifyToken(req,res)
 
-        const batch = await getBatch()
+        const batch = await getBatch(pid)
         res.status(200).json(batch);
     } catch (err) {
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
