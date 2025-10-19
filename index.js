@@ -40,5 +40,6 @@ app.get("/", (req, res)=>{
 const userRouter = require("./routes/users.js")
 const expenseRouter = require("./routes/expenses.js")
 const inventoryRouter = require("./routes/inventory.js")
+const maintenanceRouter = require("./routes/maintenance.js")
 
-app.use(userRouter , expenseRouter, inventoryRouter)
+app.use(userRouter , expenseRouter, inventoryRouter, maintenanceRouter)
