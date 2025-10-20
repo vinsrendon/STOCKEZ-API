@@ -17,7 +17,7 @@ router.get("/backup" , async (req,res) => {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const backupFile = path.join(BACKUP_DIR, `${process.env.MYSQL_DATABASE}-${timestamp}.sql`);
     
-        const dumpCommand = `"C:\\xampp\\mysql\\bin\\mysqldump.exe" -u ${process.env.MYSQL_USER} ${process.env.MYSQL_PASSWORD ? `-p${process.env.MYSQL_PASSWORD}` : ''} ${process.env.MYSQL_DATABASE} > "${backupFile}"`;
+        const dumpCommand = `"C:\\xampp\\mysql\\bin\\mysqldump.exe" -u ${process.env.MYSQL_USER} ${process.env.MYSQL_PASSWORD ? `-p${process.env.MYSQL_PASSWORD}` : ''} --routines ${process.env.MYSQL_DATABASE} > "${backupFile}"`;
     
         exec(dumpCommand,{ shell: true }, (error, stdout, stderr) => {
             if (error) {
