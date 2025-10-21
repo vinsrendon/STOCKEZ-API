@@ -26,7 +26,7 @@ router.get("/backup" , async (req,res) => {
             }
     
             // console.log('Backup successful:', backupFile);
-            res.json({ message: 'Backup created successfully', file: backupFile });
+            res.status(200).json({ message: 'Backup created successfully', file: backupFile });
         });
 })
 
