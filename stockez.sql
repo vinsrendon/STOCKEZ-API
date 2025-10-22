@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 19, 2025 at 09:59 AM
+-- Generation Time: Oct 22, 2025 at 03:30 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -31,9 +31,9 @@ INSERT INTO expenses(biller,expense_decs,expense_amount,expense_date) VALUES(bil
 
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `add_product` (IN `i_barcode` VARCHAR(50), IN `i_description` VARCHAR(100))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `add_product` (IN `i_barcode` VARCHAR(50), IN `i_description` VARCHAR(100), IN `i_category` INT)   BEGIN
 
-INSERT INTO products(barcode,description) VALUES(i_barcode,i_description);
+INSERT INTO products(barcode,description,category) VALUES(i_barcode,i_description,i_category);
 
 END$$
 
@@ -61,6 +61,21 @@ expense_amount,
 DATE_FORMAT(expense_date, '%Y-%m-%d') AS formatted_expense_date
 FROM expenses ORDER BY expense_date DESC;
 
+
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_item` (IN `i_barcode` VARCHAR(50))   BEGIN
+
+SELECT p.product_id,pb.batch_id,barcode,description,pb.quantity,UOM,sell_price 
+FROM products p 
+JOIN product_batches pb 
+ON pb.product_id=p.product_id 
+WHERE p.barcode = i_barcode
+AND pb.quantity > 0
+ORDER BY 
+pb.expiration_date ASC,
+pb.batch_id ASC
+LIMIT 1;
 
 END$$
 
@@ -156,18 +171,19 @@ INSERT INTO `expenses` (`expense_id`, `biller`, `expense_decs`, `expense_amount`
 CREATE TABLE `products` (
   `product_id` int(11) NOT NULL,
   `barcode` varchar(50) NOT NULL,
-  `description` text NOT NULL
+  `description` text NOT NULL,
+  `category` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`product_id`, `barcode`, `description`) VALUES
-(1, '4800016077913', '10 x 30g packs presto creams choco peanut butter'),
-(2, '4800092111822', '10 x 30g REBISCO CRACKERS PLAIN'),
-(5, '4800092113338', '1 x 30g REBISCO CRACKERS PLAIN'),
-(6, '4800016077906', '1 x 30g presto cream choco peanut butter');
+INSERT INTO `products` (`product_id`, `barcode`, `description`, `category`) VALUES
+(1, '4800016077913', '10 x 30g packs presto creams choco peanut butter', 'Food'),
+(2, '4800092111822', '10 x 30g REBISCO CRACKERS PLAIN', 'Food'),
+(5, '4800092113338', '1 x 30g REBISCO CRACKERS PLAIN', 'Food'),
+(6, '4800016077906', '1 x 30g presto cream choco peanut butter', 'Food');
 
 -- --------------------------------------------------------
 
@@ -210,6 +226,20 @@ CREATE TABLE `purchase_history` (
   `purchase_total` double NOT NULL,
   `amount_tendered` double NOT NULL,
   `amount_change` double NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stock_history`
+--
+
+CREATE TABLE `stock_history` (
+  `log_id` int(11) NOT NULL,
+  `stockedBy` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `batch_id` int(11) NOT NULL,
+  `stock_date` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -298,6 +328,12 @@ ALTER TABLE `purchase_history`
   ADD PRIMARY KEY (`purchase_id`);
 
 --
+-- Indexes for table `stock_history`
+--
+ALTER TABLE `stock_history`
+  ADD PRIMARY KEY (`log_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -332,6 +368,12 @@ ALTER TABLE `product_batches`
 --
 ALTER TABLE `purchase_history`
   MODIFY `purchase_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `stock_history`
+--
+ALTER TABLE `stock_history`
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `users`

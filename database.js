@@ -61,8 +61,8 @@ export async function addExpense(biller,expense_desc,expense_amount,expense_date
 }
 
 //INVENTORY
-export async function addProduct(barcode,description){
-    await pool.query(`CALL add_product(?,?)`,[barcode,description])
+export async function addProduct(barcode,description,category){
+    await pool.query(`CALL add_product(?,?,?)`,[barcode,description,category])
 }
 
 export async function getProducts(){
@@ -79,31 +79,3 @@ export async function getBatch(pid){
     return batch[0]
 }
 
-
-
-//MAINTENANCE
-// import { exec } from 'child_process';
-// import fs from 'fs';
-// import path from 'path';
-// const BACKUP_DIR = path.join(process.cwd(), 'backups');
-
-// export async function backupDB(){
-//     if (!fs.existsSync(BACKUP_DIR)) {
-//         fs.mkdirSync(BACKUP_DIR);
-//     }
-
-//     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-//     const backupFile = path.join(BACKUP_DIR, `${process.env.MYSQL_DATABASE}-${timestamp}.sql`);
-
-//     const dumpCommand = `mysqldump -u ${process.env.MYSQL_USER} ${process.env.MYSQL_PASSWORD ? `-p${process.env.MYSQL_PASSWORD}` : ''} ${process.env.MYSQL_DATABASE} > "${backupFile}"`;
-
-//     exec(dumpCommand, (error, stdout, stderr) => {
-//         if (error) {
-//             console.error('Backup failed:', stderr);
-//             return res.status(500).json({ message: 'Backup failed', error: stderr });
-//         }
-
-//         console.log('Backup successful:', backupFile);
-//         res.json({ message: 'Backup created successfully', file: backupFile });
-//     });
-// }
