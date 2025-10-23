@@ -74,8 +74,12 @@ export async function addBatch(pid,dDate,mDate,eDate,qty,uom,bp,sp){
     await pool.query(`CALL add_product_batch(?,?,?,?,?,?,?,?)`,[pid,dDate,mDate,eDate,qty,uom,bp,sp])
 }
 
-export async function getBatch(pid){
-    const [batch] = await pool.query(`CALL get_product_batch(?)`,[pid])
+export async function getBatch(bid){
+    const [batch] = await pool.query(`CALL get_product_batch(?)`,[bid])
     return batch[0]
 }
 
+export async function getItem(barcode){
+    const [item] = await pool.query(`CALL get_item(?)`,[barcode])
+    return item[0]
+}
