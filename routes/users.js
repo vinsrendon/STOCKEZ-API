@@ -16,13 +16,11 @@ router.get('/users' , async (req,res) => {
     try {
         verifyToken(req,res);
         const decoded = jwt.verify(token, SECRET);
-        // console.log(decoded.id);
         const users = await getUsers()
         const filteredUsers = users.filter(user => user.uid !== decoded.id);
         return res.status(200).json(filteredUsers);
     } 
-    catch (err) {
-        // console.log(err);        
+    catch (err) {      
         return res.status(500).json({ message: "Unexpected Error occurred",error:err });
     }    
 })
@@ -39,8 +37,7 @@ router.get('/userbyid' , async (req,res) => {
         const user = await getUserById(uid)
         return res.status(200).json(user);
     } 
-    catch (err) {
-        // console.log(err);        
+    catch (err) {   
         return res.status(500).json({ message: "Unexpected Error occurred",error:err });
     }    
 })
@@ -58,7 +55,6 @@ router.post('/changeuserstatus' , async (req,res) => {
         return res.status(200).json({message:"User Status Successfully Changed"});
     } 
     catch (err) {
-        // console.log(err);        
         return res.status(500).json({ message: "Unexpected Error occurred",error:err });
     }    
 })
@@ -74,6 +70,7 @@ router.post("/login" , async (req,res) => {
 
     try {
         const user = await loginUser(username) 
+        const userbyid = await getUserById(user[0].uid)
         
         if (user[0]) {
             const isValid = await bcrypt.compare(password,user[0].password)
@@ -81,7 +78,10 @@ router.post("/login" , async (req,res) => {
             if(user[0].status === 0) return res.status(203).json({message: "NO USER FOUND"})//WHEN USER IS DEACTIVATED
 
             if(isValid){
-                const token = jwt.sign({ id: user[0].uid, user: user[0].username,role:user[0].role }, SECRET, { expiresIn: "12h" });
+                const fname = userbyid[0].firstname;
+                const lname = userbyid[0].lastname;
+                const name = lname.charAt(0).toUpperCase() + "." + fname.charAt(0).toUpperCase() + fname.slice(1).toLowerCase();
+                const token = jwt.sign({ id: user[0].uid, user: user[0].username,name:name,role:user[0].role }, SECRET, { expiresIn: "12h" });
 
                 res.cookie("token", token, {
                 httpOnly: true, 
@@ -90,11 +90,11 @@ router.post("/login" , async (req,res) => {
                 maxAge: 60 * 60 * 12000 // 12 hour
                 });
 
-                return res.status(200).json({message: "LOGGED IN", username:user[0].username, role:user[0].role})
+
+                return res.status(200).json({message: "LOGGED IN", username:user[0].username,name:name, role:user[0].role})
             }
             else
                 return res.status(203).json({message: "WRONG USER OR PASS"})
-
         } 
         else {
             return res.status(203).json({message: "NO USER FOUND"})
@@ -128,7 +128,7 @@ router.post("/register" , async (req,res) => {
         
         return res.status(200).json({message: "REGISTERED SUCCESSFULLY"})
     } catch (error) {
-        if(error.code === "ER_DUP_ENTRY") return res.status(400).json({message: "DUPLICATE ENTRY DETECTED"})
+        if(error.code === "ER_DUP_ENTRY") return res.status(400).json({message: "USERNAME ALREADY EXIST"})
         
         else return res.status(500).json({message: "ERROR", error})        
     }
