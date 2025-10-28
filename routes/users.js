@@ -62,17 +62,17 @@ router.post('/changeuserstatus' , async (req,res) => {
 
 
 router.post("/login" , async (req,res) => {
-    const {username,password} = req.body
+    const {username,password} = req.body    
 
     if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required." });
     }
 
     try {
-        const user = await loginUser(username) 
-        const userbyid = await getUserById(user[0].uid)
+        const user = await loginUser(username)         
         
         if (user[0]) {
+            const userbyid = await getUserById(user[0].uid)
             const isValid = await bcrypt.compare(password,user[0].password)
 
             if(user[0].status === 0) return res.status(203).json({message: "NO USER FOUND"})//WHEN USER IS DEACTIVATED
