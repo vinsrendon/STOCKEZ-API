@@ -29,8 +29,8 @@ export async function getUsers(){
 }
 
 export async function getUserById(uid){
-    const [rows] = await pool.query(`CALL get_user_by_id(?)`,[uid])
-    return rows[0]
+    const [rows] = await pool.execute(`SELECT * FROM users_info ui JOIN users u ON u.uid=ui.uid WHERE u.uid = ?`,[uid])
+    return rows
 }
 
 export async function changeUserStatus(uid){
@@ -42,9 +42,8 @@ export async function registerUser(user,pass,role,flag,fname,mname,lname,pnumber
 }
 
 export async function loginUser(user){
-    // const [result] = await pool.query('CALL login(?)',[user])
     const [result] = await pool.query('SELECT * from users WHERE username = ?',[user])
-    return result[0]
+    return result
 }
 
 export async function resetUserPassword(uid,pass){

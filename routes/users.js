@@ -68,7 +68,7 @@ router.post("/login" , async (req,res) => {
     }
 
     try {
-        const user = await loginUser(username)         
+        const user = await loginUser(username)              
         
         if (user[0]) {
             const userbyid = await getUserById(user[0].uid)
