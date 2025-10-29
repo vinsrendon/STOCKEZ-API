@@ -6,7 +6,6 @@ const dotenv = require('dotenv')
 const {verifyToken} = require('./verify.js')
 
 dotenv.config()
-const SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 const  { getUsers , registerUser, loginUser, getUserById, changeUserStatus, resetUserPassword} = require('../database.js')
 
@@ -15,7 +14,7 @@ router.get('/users' , async (req,res) => {
     if (!token) return res.status(401).json({ message: "Unauthorized" });
     try {
         verifyToken(req,res);
-        const decoded = jwt.verify(token, SECRET);
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         const users = await getUsers()
         const filteredUsers = users.filter(user => user.uid !== decoded.id);
         return res.status(200).json(filteredUsers);
