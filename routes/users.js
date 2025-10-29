@@ -80,7 +80,7 @@ router.post("/login" , async (req,res) => {
                 const fname = userbyid[0].firstname;
                 const lname = userbyid[0].lastname;
                 const name = lname.charAt(0).toUpperCase() + "." + fname.charAt(0).toUpperCase() + fname.slice(1).toLowerCase();
-                const token = jwt.sign({ id: user[0].uid, user: user[0].username,name:name,role:user[0].role }, SECRET, { expiresIn: "12h" });
+                const token = jwt.sign({ id: user[0].uid, user: user[0].username,name:name,role:user[0].role }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "12h" });
 
                 res.cookie("token", token, {
                 httpOnly: true, 
@@ -158,7 +158,7 @@ router.get("/verify", (req, res) => {
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
     try {
-        const decoded = jwt.verify(token, SECRET);
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         
         return res.status(200).json({message: "user verified", user: decoded});
     } 

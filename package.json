@@ -1,5 +1,5 @@
 {
-  "name": "stockezapibe",
+  "name": "stockezapi",
   "version": "1.0.0",
   "description": "api for stockez POS and inventory management system",
   "main": "index.js",
