@@ -40,7 +40,7 @@ router.get("/backups", (req, res) => {
     
     // Ensure directory exists
     if (!fs.existsSync(BACKUP_DIR)) {
-      return res.status(404).json({ message: "No backup folder found" });
+      return res.status(404).json({ message: "No backup folder found yet" });
     }
 
     // Read all files in the backup directory
