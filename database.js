@@ -42,7 +42,8 @@ export async function registerUser(user,pass,role,flag,fname,mname,lname,pnumber
 }
 
 export async function loginUser(user){
-    const [result] = await pool.query('CALL login(?)',[user])
+    // const [result] = await pool.query('CALL login(?)',[user])
+    const [result] = await pool.query('SELECT * from users WHERE username = ?',[user])
     return result[0]
 }
 
