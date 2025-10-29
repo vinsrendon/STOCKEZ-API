@@ -5,20 +5,38 @@ const cookieParser = require("cookie-parser")
 
 const app = express()
 
-app.use(cors({
-    // origin:'http://localhost:5173',
-    origin: function (origin, callback) {
-    // Allow any origin that ends with :5173
-    if (!origin || origin.match(/^http:\/\/.*:5173$/ || origin == 'https://stockez-frontend.netlify.app/')) {
-      callback(null, true);
-    } 
+// app.use(cors({
+//     // origin:'http://localhost:5173',
+//     origin: function (origin, callback) {
+//     // Allow any origin that ends with :5173
+//     if (!origin || origin.match(/^http:\/\/.*:5173$/)) {
+//       callback(null, true);
+//     } 
     
-    else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-    credentials:true
-}))
+//     else {
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//     credentials:true
+// }))
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow localhost:5173 or your Netlify frontend
+      const allowedOrigins = [
+        "http://localhost:5173",
+        "https://stockez-frontend.netlify.app",
+      ];
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json())
 app.use(cookieParser());
 
