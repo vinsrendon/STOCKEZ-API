@@ -24,8 +24,8 @@ app.use(
     origin: function (origin, callback) {
       // Allow localhost:5173 or your Netlify frontend
       const allowedOrigins = [
-        "http://localhost:5173",
-        "https://stockez-frontend.netlify.app",
+        "http://localhost:5173/",
+        "https://stockez-frontend.netlify.app/",
       ];
 
       if (!origin || allowedOrigins.includes(origin)) {
