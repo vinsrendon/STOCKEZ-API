@@ -9,9 +9,11 @@ app.use(cors({
     // origin:'http://localhost:5173',
     origin: function (origin, callback) {
     // Allow any origin that ends with :5173
-    if (!origin || origin.match(/^http:\/\/.*:5173$/)) {
+    if (!origin || origin.match(/^http:\/\/.*:5173$/ || origin == 'https://stockez-frontend.netlify.app/')) {
       callback(null, true);
-    } else {
+    } 
+    
+    else {
       callback(new Error("Not allowed by CORS"));
     }
   },
