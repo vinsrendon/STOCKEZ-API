@@ -10,9 +10,13 @@ const app = express()
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(process.env.ALLOWED_ORIGINS.split(","))) {
+      if (!origin || origin.match(/^http?:\/\/.*:5173$/)) {
         callback(null, true);
-      } else {
+      } 
+      else if(allowedOrigins.includes(process.env.ALLOWED_ORIGINS.split(","))){
+        callback(null, true);
+      }
+      else {
         callback(new Error("Not allowed by CORS"));
       }
     },
