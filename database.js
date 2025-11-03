@@ -99,7 +99,7 @@ export async function getBatch(bid){
 }
 
 export async function getItem(barcode){
-    const [item] = await pool.query(`SELECT 
+    const [item] = await pool.execute(`SELECT 
     p.product_id,pb.batch_id,barcode,description,pb.quantity,UOM,sell_price 
     FROM products p 
     JOIN product_batches pb 
@@ -109,6 +109,17 @@ export async function getItem(barcode){
     ORDER BY 
     pb.expiration_date ASC,
     pb.batch_id ASC
-    LIMIT 1;`,[barcode])
+    LIMIT 1`,[barcode])
     return item
+}
+
+// CASHIER
+export async function addPurchaseHistory(purchase_amount,cashier,purchase_total,amount_tendered,amount_change){
+    await pool.execute(`INSERT INTO product_history(purchase_amount,cashier,purchase_total,amount_tendered,amount_change)
+    VALUES(?,?,?,?,?)`,[purchase_amount,cashier,purchase_total,amount_tendered,amount_change])
+}
+
+export async function addPurchaseHistoryItems(purchase_id,batch_id,qty){
+    await pool.execute(`INSERT INTO product_history_items(purchase_id,batch_id,qty)
+    VALUES(?,?,?)`,[purchase_id,batch_id,qty])
 }
