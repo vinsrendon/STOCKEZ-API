@@ -104,7 +104,7 @@ export async function getItem(barcode){
     FROM products p 
     JOIN product_batches pb 
     ON pb.product_id=p.product_id 
-    WHERE p.barcode = i_barcode
+    WHERE p.barcode = ?
     AND pb.quantity > 0
     ORDER BY 
     pb.expiration_date ASC,
