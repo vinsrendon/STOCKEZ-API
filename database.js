@@ -114,12 +114,13 @@ export async function getItem(barcode){
 }
 
 // CASHIER
-export async function addPurchaseHistory(purchase_amount,cashier,purchase_total,amount_tendered,amount_change){
-    await pool.execute(`INSERT INTO product_history(purchase_amount,cashier,purchase_total,amount_tendered,amount_change)
-    VALUES(?,?,?,?,?)`,[purchase_amount,cashier,purchase_total,amount_tendered,amount_change])
+export async function addPurchaseHistory(cashier,purchase_total,amount_tendered,amount_change){
+    const [result] = await pool.execute(`INSERT INTO purchase_history(cashier,purchase_total,amount_tendered,amount_change)
+    VALUES(?,?,?,?)`,[cashier,purchase_total,amount_tendered,amount_change])
+    return result.insertId
 }
 
 export async function addPurchaseHistoryItems(purchase_id,batch_id,qty){
-    await pool.execute(`INSERT INTO product_history_items(purchase_id,batch_id,qty)
+    await pool.execute(`INSERT INTO purchase_history_items(purchase_id,batch_id,qty)
     VALUES(?,?,?)`,[purchase_id,batch_id,qty])
 }
