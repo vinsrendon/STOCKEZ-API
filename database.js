@@ -124,3 +124,12 @@ export async function addPurchaseHistoryItems(purchase_id,batch_id,qty){
     await pool.execute(`INSERT INTO purchase_history_items(purchase_id,batch_id,qty)
     VALUES(?,?,?)`,[purchase_id,batch_id,qty])
 }
+
+export async function startCashierSession(user_id, opening_balance){
+    const [result]  = await pool.execute(`INSERT INTO cashier_sessions(user_id, opening_balance) VALUES (?,?)`,[user_id, opening_balance])
+    return result.insertId
+}
+
+export async function endCashierSession(cashierSessionId, closing_balance){
+    await pool.execute(`UPDATE cashier_sessions SET closed_at = NOW(),closing_balance = ? WHERE id = ?`,[closing_balance, cashierSessionId])
+}

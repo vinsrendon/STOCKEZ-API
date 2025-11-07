@@ -107,6 +107,7 @@ router.post("/login" , async (req,res) => {
 
 router.post("/logout", (req, res) => {
   res.clearCookie("token");
+  res.clearCookie("cashierSessionId");
   res.status(200).json({ message: "Logged out" });
 });
 
