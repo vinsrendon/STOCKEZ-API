@@ -50,7 +50,7 @@ router.post('/startCashierSession' , async (req,res) => {
         res.cookie("cashierSessionId", cashierSessionId, {
         httpOnly: true, 
         secure: true,    // set to true in production with HTTPS
-        sameSite: "lax",
+        sameSite: "strict",
         maxAge: 60 * 60 * 12000 // 12 hour
         });
 
