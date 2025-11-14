@@ -4,7 +4,6 @@ const cookieParser = require("cookie-parser")
 const dotenv = require('dotenv')
 
 dotenv.config()
-const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
 
 const app = express()
 
@@ -14,7 +13,7 @@ app.use(
       if (!origin || origin.match(/^http?:\/\/.*:5173$/) || origin.match(/^http?:\/\/.*:4173$/)) {
         callback(null, true);
       } 
-      else if(origin.includes(allowedOrigins)){
+      else if(origin == allowedOrigins){
         callback(null, true);
       }
       else {
