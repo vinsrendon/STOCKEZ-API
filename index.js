@@ -5,7 +5,6 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
-console.log(allowedOrigins);
 
 const app = express()
 
@@ -15,7 +14,7 @@ app.use(
       if (!origin || origin.match(/^http?:\/\/.*:5173$/) || origin.match(/^http?:\/\/.*:4173$/)) {
         callback(null, true);
       } 
-      else if(allowedOrigins.includes(origin)){
+      else if(origin.includes(allowedOrigins)){
         callback(null, true);
       }
       else {
