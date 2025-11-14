@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser")
 const dotenv = require('dotenv')
 
 dotenv.config()
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
 
 const app = express()
 
