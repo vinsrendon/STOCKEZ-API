@@ -5,6 +5,7 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
+console.log(allowedOrigins);
 
 const app = express()
 
