@@ -14,7 +14,7 @@ app.use(
       if (!origin || origin.match(/^http?:\/\/.*:5173$/) || origin.match(/^http?:\/\/.*:4173$/)) {
         callback(null, true);
       } 
-      else if(origin == allowedOrigins){
+      else if(allowedOrigins.includes(origin)){
         callback(null, true);
       }
       else {
