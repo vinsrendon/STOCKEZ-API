@@ -87,7 +87,7 @@ router.post("/login" , async (req,res) => {
                 secure: true,    // set to true in production with HTTPS
                 sameSite: "none",
                 maxAge: 60 * 60 * 12000, // 12 hour
-                Partition: true
+                partitioned: true,
                 });
 
                 return res.status(200).json({message: "LOGGED IN", username:user[0].username,name:name, role:user[0].role})

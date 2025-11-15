@@ -52,7 +52,7 @@ router.post('/startCashierSession' , async (req,res) => {
         secure: true,    // set to true in production with HTTPS
         sameSite: "none",
         maxAge: 60 * 60 * 12000, // 12 hour,
-        Partition: true,
+        partitioned: true,
         });
         
 
