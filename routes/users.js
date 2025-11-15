@@ -88,7 +88,7 @@ router.post("/login" , async (req,res) => {
                 sameSite: "none",
                 maxAge: 60 * 60 * 12000 // 12 hour
                 });
-
+                res.append("Set-Cookie", `token=${token}; Path=/; Secure; HttpOnly; SameSite=None; Partitioned`);
 
                 return res.status(200).json({message: "LOGGED IN", username:user[0].username,name:name, role:user[0].role})
             }

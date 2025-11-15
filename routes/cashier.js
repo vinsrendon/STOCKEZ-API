@@ -52,8 +52,8 @@ router.post('/startCashierSession' , async (req,res) => {
         secure: true,    // set to true in production with HTTPS
         sameSite: "none",
         maxAge: 60 * 60 * 12000, // 12 hour,
-        partitioned
         });
+        res.append("Set-Cookie", `token=${token}; Path=/; Secure; HttpOnly; SameSite=None; Partitioned`);
 
         res.status(200).json("CASHEIR SESSION STARTED SUCCESSFULLY");
     } catch (err) {
