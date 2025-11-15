@@ -51,7 +51,8 @@ router.post('/startCashierSession' , async (req,res) => {
         httpOnly: true, 
         secure: true,    // set to true in production with HTTPS
         sameSite: "none",
-        maxAge: 60 * 60 * 12000 // 12 hour
+        maxAge: 60 * 60 * 12000, // 12 hour,
+        partitioned
         });
 
         res.status(200).json("CASHEIR SESSION STARTED SUCCESSFULLY");
