@@ -106,10 +106,25 @@ router.post("/login" , async (req,res) => {
 })
 
 router.post("/logout", (req, res) => {
-  res.clearCookie("token");
-  res.clearCookie("cashierSessionId");
-  res.status(200).json({ message: "Logged out" });
+    const cookiesToClear = ["token", "cashierSessionId"];
+
+    clearCookies(res, cookiesToClear);
+    
+    res.status(200).json({ message: "Logged out" });
 });
+
+function clearCookies(res, cookieNames) {
+    const cookieOptions = {
+        secure: true,
+        sameSite: 'none',
+        partitioned: true,
+        httpOnly: true,
+    };
+
+    cookieNames.forEach(name => {
+        res.clearCookie(name, cookieOptions);
+    });
+}
 
 router.post("/register" , async (req,res) => {
     const {username,password,role,flag,fname,mname,lname,pnumber,address} = req.body   
