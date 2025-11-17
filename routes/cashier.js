@@ -12,7 +12,15 @@ router.post('/savepurchasehistory' , async (req,res) => {
     const {purchase_total,amount_tendered,amount_change,items} = req.body
     
     const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+    if(!purchase_total || !amount_tendered || !amount_change || !items)    
+        return res.status(400).json({ message: "Missing require fields" });
+    
+    if(isNaN(purchase_total) || isNaN(amount_tendered) || isNaN(amount_change))  
+        return res.status(400).json({ message: "purchase_total, amount_tendered and amount_change must be valid numbers" });
+
+    if (!token) 
+        return res.status(401).json({ message: "Unauthorized" });
     
     try {
         verifyToken(req,res)
@@ -38,6 +46,11 @@ router.post('/startCashierSession' , async (req,res) => {
     const {opening_balance} = req.body
     
     const token = req.cookies.token;
+
+    if(!opening_balance)    return res.status(400).json({ message: "Missing opening balance" });
+    
+    if(isNaN(opening_balance))  return res.status(400).json({ message: "opening balance must be a valid number" });
+
     if (!token) return res.status(401).json({ message: "Unauthorized" });
     
     try {
@@ -68,6 +81,11 @@ router.post('/endCashierSession' , async (req,res) => {
     
     const token = req.cookies.token;
     const cashierSessionId = req.cookies.cashierSessionId;
+
+    if(!closing_balance)    return res.status(400).json({ message: "Missing closing balance" });
+
+    if(isNaN(closing_balance))  return res.status(400).json({ message: "closing balance must be a valid number" });    
+
     if (!token) return res.status(401).json({ message: "Unauthorized" });
     
     try {
