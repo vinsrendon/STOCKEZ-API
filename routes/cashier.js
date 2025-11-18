@@ -13,7 +13,7 @@ router.post('/savepurchasehistory' , async (req,res) => {
     
     const token = req.cookies.token;
 
-    if(!purchase_total || !amount_tendered || !amount_change || !items)    
+    if(!purchase_total || !amount_tendered || amount_change === undefined || !items)    
         return res.status(400).json({ message: "Missing require fields" });
     
     if(isNaN(purchase_total) || isNaN(amount_tendered) || isNaN(amount_change))  
