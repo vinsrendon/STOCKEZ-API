@@ -93,10 +93,10 @@ router.post("/login" , async (req,res) => {
                 return res.status(200).json({message: "LOGGED IN", username:user[0].username,name:name, role:user[0].role})
             }
             else
-                return res.status(203).json({message: "WRONG USER OR PASS"})
+                return res.status(400).json({message: "WRONG USER OR PASS"})
         } 
         else {
-            return res.status(203).json({message: "NO USER FOUND"})
+            return res.status(400).json({message: "NO USER FOUND"})
         }
 
     } catch (err) {
