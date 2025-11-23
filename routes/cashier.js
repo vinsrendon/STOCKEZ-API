@@ -35,7 +35,7 @@ router.post('/savepurchasehistory' , async (req,res) => {
             }
         }
 
-        res.status(200).json("PURCHASE HISTORY SAVED");
+        res.status(200).json({ message: "PURCHASE HISTORY SAVED" });
     } catch (err) {
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
@@ -69,7 +69,7 @@ router.post('/startCashierSession' , async (req,res) => {
         });
         
 
-        res.status(200).json("CASHEIR SESSION STARTED SUCCESSFULLY");
+        res.status(200).json({ message: "CASHIER SESSION STARTED SUCCESSFULLY" });
     } catch (err) {
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
@@ -93,7 +93,7 @@ router.post('/endCashierSession' , async (req,res) => {
         
         await endCashierSession(cashierSessionId,closing_balance)
 
-        res.status(200).json("CASHEIR SESSION ENDED SUCCESSFULLY");
+        res.status(200).json({ message: "CASHIER SESSION ENDED SUCCESSFULLY" });
     } catch (err) {
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
