@@ -6,7 +6,7 @@
 npm install
 ```
 
-### RUN SERVER
+### Compile and Hot-Reload for Development
 
 ```sh
 npm run server

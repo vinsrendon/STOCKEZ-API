@@ -82,12 +82,14 @@ router.post("/login" , async (req,res) => {
                 const name = lname.charAt(0).toUpperCase() + "." + fname.charAt(0).toUpperCase() + fname.slice(1).toLowerCase();
                 const token = jwt.sign({ id: user[0].uid, user: user[0].username,name:name,role:user[0].role }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "12h" });
 
+                const isDev = process.env.MODE === 'DEV'
+                
                 res.cookie("token", token, {
                 httpOnly: true, 
-                secure: true,    // set to true in production with HTTPS
-                sameSite: "none",
-                maxAge: 60 * 60 * 12000, // 12 hour
-                partitioned: true,
+                secure: !isDev,
+                sameSite: isDev ? "lax" : "none",
+                maxAge: 60 * 60 * 12000, 
+                partitioned: !isDev,
                 });
 
                 return res.status(200).json({message: "LOGGED IN", username:user[0].username,name:name, role:user[0].role})
@@ -114,11 +116,13 @@ router.post("/logout", (req, res) => {
 });
 
 function clearCookies(res, cookieNames) {
+    const isDev = process.env.MODE === 'DEV'    
+    
     const cookieOptions = {
-        secure: true,
-        sameSite: 'none',
-        partitioned: true,
         httpOnly: true,
+        secure: !isDev,
+        sameSite: isDev ? "lax" : "none",
+        partitioned: !isDev,        
     };
 
     cookieNames.forEach(name => {

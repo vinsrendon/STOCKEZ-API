@@ -60,12 +60,14 @@ router.post('/startCashierSession' , async (req,res) => {
         
         const cashierSessionId = await startCashierSession(cashier, opening_balance)
 
+        const isDev = process.env.MODE === 'DEV'
+
         res.cookie("cashierSessionId", cashierSessionId, {
         httpOnly: true, 
-        secure: true,    // set to true in production with HTTPS
-        sameSite: "none",
-        maxAge: 60 * 60 * 12000, // 12 hour,
-        partitioned: true,
+        secure: !isDev, 
+        sameSite: isDev ? "lax" : "none",
+        maxAge: 60 * 60 * 12000,
+        partitioned: !isDev,
         });
         
 
