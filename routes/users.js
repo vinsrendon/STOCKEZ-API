@@ -147,7 +147,7 @@ router.post("/register" , async (req,res) => {
         
         return res.status(200).json({message: "REGISTERED SUCCESSFULLY"})
     } catch (error) {
-        if(error.code === "ER_DUP_ENTRY") return res.status(400).json({message: "USERNAME ALREADY EXIST"})
+        if(error.code === "ER_DUP_ENTRY") return res.status(409).json({message: "USERNAME ALREADY EXIST"})
         
         else return res.status(500).json({message: "ERROR", error})        
     }

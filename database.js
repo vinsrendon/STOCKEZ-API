@@ -38,15 +38,40 @@ export async function changeUserStatus(uid){
 }
 
 export async function registerUser(user,pass,role,flag,fname,mname,lname,pnumber,address){     
-    const [userResult] = await pool.execute(`INSERT INTO 
-    users (username, password, role, status) 
-    VALUES (?, ?, ?, ?)`,[user, pass, role, flag]);
+    // const [userResult] = await pool.execute(`INSERT INTO 
+    // users (username, password, role, status) 
+    // VALUES (?, ?, ?, ?)`,[user, pass, role, flag]);
 
-    const newUserId = userResult.insertId;
+    // const newUserId = userResult.insertId;
 
-    await pool.execute(`INSERT INTO 
-    users_info (uid, firstname, middlename, lastname, phone_number, address)
-    VALUES (?, ?, ?, ?, ?, ?)`,[newUserId, fname, mname, lname, pnumber, address]);    
+    // await pool.execute(`INSERT INTO 
+    // users_info (uid, firstname, middlename, lastname, phone_number, address)
+    // VALUES (?, ?, ?, ?, ?, ?)`,[newUserId, fname, mname, lname, pnumber, address]);    
+
+    const conn = await pool.getConnection();
+
+    try {
+        await conn.beginTransaction();
+
+        const [userResult] = await conn.execute(`
+            INSERT INTO users (username, password, role, status) 
+            VALUES (?, ?, ?, ?)`, 
+            [user, pass, role, flag]);
+
+        const newUserId = userResult.insertId;
+
+        await conn.execute(`
+            INSERT INTO users_info (uid, firstname, middlename, lastname, phone_number, address)
+            VALUES (?, ?, ?, ?, ?, ?)`, 
+            [newUserId, fname, mname, lname, pnumber, address]);
+
+        await conn.commit();
+    } catch (err) {
+        await conn.rollback();
+        throw err;
+    } finally {
+        conn.release();
+    }
 }
 
 export async function loginUser(user){
