@@ -73,21 +73,22 @@ router.post("/restore", async (req, res) => {
     await connection.beginTransaction();
 
     // Drop all tables first
-    const [tables] = await connection.query("SHOW TABLES");
-    const tableNames = tables.map(row => Object.values(row)[0]);
-    if (tableNames.length) {
-      await connection.query(`SET FOREIGN_KEY_CHECKS = 0;`);
-      for (const table of tableNames) {
-        await connection.query(`DROP TABLE IF EXISTS \`${table}\`;`);
-      }
-      await connection.query(`SET FOREIGN_KEY_CHECKS = 1;`);
-    }
+    // const [tables] = await connection.query("SHOW TABLES");
+    // const tableNames = tables.map(row => Object.values(row)[0]);
+    // if (tableNames.length) {
+    //   await connection.query(`SET FOREIGN_KEY_CHECKS = 0;`);
+    //   for (const table of tableNames) {
+    //     await connection.query(`DROP TABLE IF EXISTS \`${table}\`;`);
+    //   }
+    //   await connection.query(`SET FOREIGN_KEY_CHECKS = 1;`);
+    // }
 
     // Read the SQL file
     const sql = fs.readFileSync(backupFile, 'utf8');
 
+    sql = sql.replace(/INSERT INTO/gi, 'REPLACE INTO');
     // Execute the SQL statements
-    await connection.query(sql1);
+    await connection.query(sql);
 
     // Commit transaction
     await connection.commit();
