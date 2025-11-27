@@ -38,16 +38,6 @@ export async function changeUserStatus(uid){
 }
 
 export async function registerUser(user,pass,role,flag,fname,mname,lname,pnumber,address){     
-    // const [userResult] = await pool.execute(`INSERT INTO 
-    // users (username, password, role, status) 
-    // VALUES (?, ?, ?, ?)`,[user, pass, role, flag]);
-
-    // const newUserId = userResult.insertId;
-
-    // await pool.execute(`INSERT INTO 
-    // users_info (uid, firstname, middlename, lastname, phone_number, address)
-    // VALUES (?, ?, ?, ?, ?, ?)`,[newUserId, fname, mname, lname, pnumber, address]);    
-
     const conn = await pool.getConnection();
 
     try {
@@ -139,9 +129,9 @@ export async function getItem(barcode){
 }
 
 // CASHIER
-export async function addPurchaseHistory(cashier,purchase_total,amount_tendered,amount_change){
-    const [result] = await pool.execute(`INSERT INTO purchase_history(cashier,purchase_total,amount_tendered,amount_change)
-    VALUES(?,?,?,?)`,[cashier,purchase_total,amount_tendered,amount_change])
+export async function addPurchaseHistory(receiptNumber,cashier,purchase_total,amount_tendered,amount_change){
+    const [result] = await pool.execute(`INSERT INTO purchase_history(receipt_number,cashier,purchase_total,amount_tendered,amount_change)
+    VALUES(?,?,?,?,?)`,[receiptNumber,cashier,purchase_total,amount_tendered,amount_change])
     return result.insertId
 }
 
@@ -157,4 +147,19 @@ export async function startCashierSession(user_id, opening_balance){
 
 export async function endCashierSession(cashierSessionId, closing_balance){
     await pool.execute(`UPDATE cashier_sessions SET closed_at = NOW(),closing_balance = ? WHERE id = ?`,[closing_balance, cashierSessionId])
+}
+
+export async function getLastReceiptNumber(prefix){
+    const [rows] = await pool.execute(`SELECT receipt_number FROM purchase_history WHERE receipt_number LIKE ? ORDER BY receipt_number DESC LIMIT 1`,[`${prefix}%`]);
+    return rows
+}
+
+export async function getSalesHistory(from,to){
+    if (!from || !to) {
+        const [result] = await pool.execute(`SELECT purchase_Id,receipt_number,purchase_date,DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date from purchase_history`)        
+        return result
+    } else {
+        const [result] = await pool.execute(`SELECT purchase_Id,receipt_number,purchase_date,DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date from purchase_history where date(purchase_date) between ? and ?`,[from,to])
+        return result   
+    }
 }

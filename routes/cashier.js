@@ -5,7 +5,7 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-const  { addPurchaseHistory, addPurchaseHistoryItems, startCashierSession, endCashierSession} = require('../database.js')
+const  { addPurchaseHistory, addPurchaseHistoryItems, startCashierSession, endCashierSession, getLastReceiptNumber, getSalesHistory} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
 router.post('/savepurchasehistory' , async (req,res) => {
@@ -26,8 +26,10 @@ router.post('/savepurchasehistory' , async (req,res) => {
         verifyToken(req,res)
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         const cashier = decoded.id
+
+        const receiptNumber = await generateReceiptNumber()            
         
-        const purchase_id = await addPurchaseHistory(cashier,purchase_total,amount_tendered,amount_change)
+        const purchase_id = await addPurchaseHistory(receiptNumber,cashier,purchase_total,amount_tendered,amount_change)
 
         if (Array.isArray(items)) {
             for (const item of items) {
@@ -35,12 +37,37 @@ router.post('/savepurchasehistory' , async (req,res) => {
             }
         }
 
-        res.status(200).json({ message: "PURCHASE HISTORY SAVED" });
+        res.status(200).json({ message: "PURCHASE HISTORY SAVED" ,receiptNumber:receiptNumber});
     } catch (err) {
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
     
 })
+
+async function generateReceiptNumber(){
+    const now = new Date();
+
+    const year = now.getFullYear();                            // 2025
+    const month = String(now.getMonth() + 1).padStart(2, "0"); // 11 → "11"
+
+    const prefix = `${year}${month}`; // "202511"
+    let rows = [];
+
+    // Get last receipt code for the same year+month
+    rows = await getLastReceiptNumber(prefix)
+
+    let newIncrement = 1;
+
+    if (rows.length > 0) {
+        const lastCode = rows[0].receipt_number.toString(); // e.g. 2025110042
+        let lastIncrement = parseInt(lastCode.slice(-4));// get "0042" → 42
+        newIncrement = lastIncrement + 1;        
+    }
+
+    const receiptCode = `${prefix}${String(newIncrement).padStart(4, "0")}`;
+    
+    return receiptCode; // Example: "2025110043"    
+}
 
 router.post('/startCashierSession' , async (req,res) => {
     const {opening_balance} = req.body
@@ -102,6 +129,25 @@ router.post('/endCashierSession' , async (req,res) => {
     
 })
 
+router.get('/getSalesHistory' , async (req,res) => {
+    const { from, to } = req.query;
+
+    const token = req.cookies.token;
+
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+
+    try {
+        verifyToken(req,res);
+
+        const history = await getSalesHistory(from,to)
+
+        return res.status(200).json(history);
+    } 
+    catch (err) {      
+        return res.status(500).json({ message: "Unexpected Error occurred",error:err });
+    }    
+})
 
 
 module.exports = router
