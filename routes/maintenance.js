@@ -84,7 +84,7 @@ router.post("/restore", async (req, res) => {
     // }
 
     // Read the SQL file
-    const sql = fs.readFileSync(backupFile, 'utf8');
+    let sql = fs.readFileSync(backupFile, 'utf8');
 
     sql = sql.replace(/INSERT INTO/gi, 'REPLACE INTO');
     // Execute the SQL statements
