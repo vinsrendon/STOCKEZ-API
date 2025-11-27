@@ -5,7 +5,7 @@ const fs = require('fs')
 const path = require('path')
 const BACKUP_DIR = path.join(process.cwd(), 'backups')
 const {verifyToken} = require('./verify.js')
-// const mysql = require('mysql2/promise')
+const mysql = require('mysql2/promise')
 const dotenv = require('dotenv')
 const mysqldump = require('mysqldump')
 
@@ -32,7 +32,9 @@ router.get("/backup" , async (req,res) => {
         password: process.env.MYSQL_PASSWORD,
         database: process.env.MYSQL_DATABASE
       },
-      dump: {excludeTables: ['test']},
+      dump: {
+        addDropTable: true
+      },
       dumpToFile: backupFile,
     });
     console.log('Dump completed');
@@ -41,6 +43,61 @@ router.get("/backup" , async (req,res) => {
     res.status(500).json({ message: 'Backup failed', error: stderr || error.message});
   }
 })
+
+router.post("/restore", async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+  verifyToken(req, res);
+
+  const { fileName } = req.body;
+  if (!fileName) return res.status(400).json({ message: "Backup file is required" });
+
+  const backupFile = path.join(BACKUP_DIR, fileName);
+  if (!fs.existsSync(backupFile)) {
+    return res.status(404).json({ message: "Backup file not found" });
+  }
+
+  try {
+    // Connect to MySQL
+    const connection = await mysql.createConnection({
+      host: process.env.MYSQL_HOST,
+      user: process.env.MYSQL_USER,
+      password: process.env.MYSQL_PASSWORD,
+      database: process.env.MYSQL_DATABASE
+    });
+
+    // Get all tables in the database
+    const [tables] = await connection.query("SHOW TABLES");
+    const tableNames = tables.map(row => Object.values(row)[0]);
+
+    // Drop all tables
+    if (tableNames.length) {
+      await connection.query(`SET FOREIGN_KEY_CHECKS = 0;`);
+      for (const table of tableNames) {
+        await connection.query(`DROP TABLE IF EXISTS \`${table}\`;`);
+      }
+      await connection.query(`SET FOREIGN_KEY_CHECKS = 1;`);
+    }
+
+    await connection.end();
+
+    // Restore backup
+    const restoreCommand = `mysql -h ${process.env.MYSQL_HOST} -u ${process.env.MYSQL_USER} -p${process.env.MYSQL_PASSWORD} ${process.env.MYSQL_DATABASE} < "${backupFile}"`;
+    exec(restoreCommand, (error, stdout, stderr) => {
+      if (error) {
+        console.error("Restore error:", stderr || error.message);
+        return res.status(500).json({ message: "Restore failed", error: stderr || error.message });
+      }
+      console.log("Restore completed");
+      res.status(200).json({ message: "Database restored successfully" });
+    });
+
+  } catch (error) {
+    console.error("Error during restore:", error);
+    res.status(500).json({ message: "Restore failed", error: error.message });
+  }
+});
 
 router.get("/backups", (req, res) => {
   const token = req.cookies.token;
