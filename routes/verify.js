@@ -9,7 +9,7 @@ function verifyToken(req,res){
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
     try {
-        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     } 
     catch (err) {
         return res.status(401).json({ message: "Invalid token" });

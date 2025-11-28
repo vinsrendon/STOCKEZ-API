@@ -74,7 +74,7 @@ router.post("/login" , async (req,res) => {
             const userbyid = await getUserById(user[0].uid)
             const isValid = await bcrypt.compare(password,user[0].password)
 
-            if(user[0].status === 0) return res.status(203).json({message: "NO USER FOUND"})//WHEN USER IS DEACTIVATED
+            if(user[0].status === 0) return res.status(404).json({message: "NO USER FOUND"})//WHEN USER IS DEACTIVATED
 
             if(isValid){
                 const fname = userbyid[0].firstname;

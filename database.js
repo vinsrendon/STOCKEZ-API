@@ -98,9 +98,10 @@ export async function getProducts(){
 }
 
 export async function addBatch(pid,dDate,mDate,eDate,qty,uom,bp,sp){
-    await pool.execute(`INSERT INTO 
+    const [result] = await pool.execute(`INSERT INTO 
     product_batches(product_id,delivery_date,manufacturing_date,expiration_date,quantity,UOM,buy_price,sell_price)
     VALUES(?,?,?,?,?,?,?,?)`,[pid,dDate,mDate,eDate,qty,uom,bp,sp])
+    return result.insertId
 }
 
 export async function getBatch(bid){
@@ -128,7 +129,16 @@ export async function getItem(barcode){
     return item
 }
 
+export async function stock_history(uid,pid,bid){
+    await pool.execute(`INSERT INTO stock_history(stocked_by,product_id,batch_id) VALUES(?,?,?)`,[uid,pid,bid])
+}
+
 // CASHIER
+export async function getCashierProducts(){
+    const [products] = await pool.execute(`SELECT p.*, SUM(b.quantity) AS totalQty FROM products p INNER JOIN product_batches b ON p.product_id = b.product_id GROUP BY p.product_id`)
+    return products
+}
+
 export async function addPurchaseHistory(receiptNumber,cashier,purchase_total,amount_tendered,amount_change){
     const [result] = await pool.execute(`INSERT INTO purchase_history(receipt_number,cashier,purchase_total,amount_tendered,amount_change)
     VALUES(?,?,?,?,?)`,[receiptNumber,cashier,purchase_total,amount_tendered,amount_change])
@@ -154,12 +164,43 @@ export async function getLastReceiptNumber(prefix){
     return rows
 }
 
-export async function getSalesHistory(from,to){
+export async function getSalesHistories(from,to){
     if (!from || !to) {
-        const [result] = await pool.execute(`SELECT purchase_Id,receipt_number,purchase_date,DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date from purchase_history`)        
-        return result
+        const [histories] = await pool.execute(`SELECT purchase_Id,receipt_number,purchase_date,DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date from purchase_history`)        
+        return histories
     } else {
-        const [result] = await pool.execute(`SELECT purchase_Id,receipt_number,purchase_date,DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date from purchase_history where date(purchase_date) between ? and ?`,[from,to])
-        return result   
+        const [histories] = await pool.execute(`SELECT purchase_Id,receipt_number,purchase_date,DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date from purchase_history where date(purchase_date) between ? and ?`,[from,to])
+        return histories   
     }
+}
+
+export async function getSalesHistory(hId){
+    // const [history] = await pool.execute(`SELECT *, DATE_FORMAT(p.purchase_date, '%Y-%m-%d %h:%i:%s %p')
+    // AS formatted_purchase_date FROM purchase_history p 
+    // JOIN purchase_history_items pi ON p.purchase_id = pi.purchase_id 
+    // JOIN users_info si ON  p.cashier = si.uid
+    // WHERE p.purchase_id = ?`,[hId])
+    // return history
+    const [headerRows] = await pool.execute(`
+        SELECT p.receipt_number,p.purchase_Id,p.purchase_date,p.purchase_total,p.amount_tendered,p.amount_change,
+        si.firstname,si.lastname, 
+        DATE_FORMAT(p.purchase_date, '%Y-%m-%d %h:%i:%s %p') AS formatted_purchase_date
+        FROM purchase_history p
+        JOIN users_info si ON p.cashier = si.uid
+        WHERE p.purchase_id = ?
+    `, [hId]);
+
+    if (headerRows.length === 0) return null;
+
+    const header = headerRows[0];
+
+    const [items] = await pool.execute(`
+        SELECT p.barcode,p.description,pb.UOM,phi.qty,pb.sell_price from purchase_history_items phi 
+        JOIN product_batches pb ON phi.batch_id = pb.batch_id 
+        JOIN products p ON pb.product_id = p.product_id
+        where phi.purchase_id = ?
+    `, [hId]);
+
+return [ headerRows, items ];
+
 }

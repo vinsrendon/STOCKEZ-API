@@ -5,7 +5,7 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-const  { addPurchaseHistory, addPurchaseHistoryItems, startCashierSession, endCashierSession, getLastReceiptNumber, getSalesHistory} = require('../database.js')
+const  { addPurchaseHistory, addPurchaseHistoryItems, startCashierSession, endCashierSession, getLastReceiptNumber, getSalesHistory,getSalesHistories, getCashierProducts} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
 router.post('/savepurchasehistory' , async (req,res) => {
@@ -129,7 +129,7 @@ router.post('/endCashierSession' , async (req,res) => {
     
 })
 
-router.get('/getSalesHistory' , async (req,res) => {
+router.get('/getSalesHistories' , async (req,res) => {
     const { from, to } = req.query;
 
     const token = req.cookies.token;
@@ -140,13 +140,49 @@ router.get('/getSalesHistory' , async (req,res) => {
     try {
         verifyToken(req,res);
 
-        const history = await getSalesHistory(from,to)
+        const history = await getSalesHistories(from,to)
 
         return res.status(200).json(history);
     } 
     catch (err) {      
         return res.status(500).json({ message: "Unexpected Error occurred",error:err });
     }    
+})
+
+router.get('/getSalesHistory' , async (req,res) => {
+    const { hId } = req.query;
+
+    const token = req.cookies.token;
+
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+
+    try {
+        verifyToken(req,res);
+
+        const history = await getSalesHistory(hId)
+
+        return res.status(200).json(history);
+    } 
+    catch (err) {      
+        return res.status(500).json({ message: "Unexpected Error occurred",error:err });
+    }    
+})
+
+router.get('/getcashierproducts' , async (req,res) => {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+    
+    try {
+        verifyToken(req,res)
+
+        const products = await getCashierProducts()
+
+        res.status(200).json(products);
+    } catch (err) {
+        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+    
 })
 
 

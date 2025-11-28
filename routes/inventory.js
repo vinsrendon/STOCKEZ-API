@@ -1,7 +1,8 @@
 const express = require("express")
+const jwt = require("jsonwebtoken")
 const router = express.Router()
 
-const  { addProduct, getProducts,addBatch,getBatch,getItem} = require('../database.js')
+const  { addProduct, getProducts, addBatch, getBatch, getItem, stock_history} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
 router.post("/addproduct" , async (req,res) => {
@@ -48,7 +49,13 @@ router.post('/addbatch' , async (req,res) => {
     try {
         verifyToken(req,res)
 
-        await addBatch(pid,dDate,mDate,eDate,qty,uom,bp,sp)
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const uid = decoded.id
+
+        const bid = await addBatch(pid,dDate,mDate,eDate,qty,uom,bp,sp)
+        
+        await stock_history(uid,pid,bid)
+
         res.status(200).json("BATCH ADDED SUCCESSFULLY");
     } catch (err) {
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
