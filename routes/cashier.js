@@ -8,22 +8,18 @@ dotenv.config()
 const  { addPurchaseHistory, addPurchaseHistoryItems, startCashierSession, endCashierSession, getLastReceiptNumber, getSalesHistory,getSalesHistories, getCashierProducts} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
-router.post('/savepurchasehistory' , async (req,res) => {
+router.post('/savepurchasehistory' ,verifyToken, async (req,res) => {
     const {purchase_total,amount_tendered,amount_change,items} = req.body
     
     const token = req.cookies.token;
 
     if(!purchase_total || !amount_tendered || amount_change === undefined || !items)    
-        return res.status(400).json({ message: "Missing require fields" });
+        return res.status(422).json({ message: "Missing require fields" });
     
     if(isNaN(purchase_total) || isNaN(amount_tendered) || isNaN(amount_change))  
         return res.status(400).json({ message: "purchase_total, amount_tendered and amount_change must be valid numbers" });
-
-    if (!token) 
-        return res.status(401).json({ message: "Unauthorized" });
     
     try {
-        verifyToken(req,res)
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         const cashier = decoded.id
 
@@ -37,9 +33,9 @@ router.post('/savepurchasehistory' , async (req,res) => {
             }
         }
 
-        res.status(200).json({ message: "PURCHASE HISTORY SAVED" ,receiptNumber:receiptNumber});
+        return res.status(200).json({ message: "PURCHASE HISTORY SAVED" ,receiptNumber:receiptNumber});
     } catch (err) {
-        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
     
 })

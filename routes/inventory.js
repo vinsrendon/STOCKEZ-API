@@ -5,19 +5,14 @@ const router = express.Router()
 const  { addProduct, getProducts, addBatch, getBatch, getItem, stock_history} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
-router.post("/addproduct" , async (req,res) => {
+router.post("/addproduct" ,verifyToken, async (req,res) => {
     const {barcode,description,category} = req.body
 
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-
     if (!barcode || !description || !category) {
-        return res.json({ message: "Fill all necessary fields." })        
+        return res.status(422).json({ message: "Fill all necessary fields." })        
     }       
 
     try {
-        verifyToken(req,res)
-
         await addProduct(barcode,description,category)        
         res.status(200).json({message: "PRODUCT ADDED SUCCESSFULLY"})
     } catch (err) {
@@ -25,30 +20,19 @@ router.post("/addproduct" , async (req,res) => {
     }
 })
 
-router.get('/getproducts' , async (req,res) => {
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-    
+router.get('/getproducts' ,verifyToken, async (req,res) => {    
     try {
-        verifyToken(req,res)
-
         const products = await getProducts()
-        res.status(200).json(products);
+        return res.status(200).json(products);
     } catch (err) {
-        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
-    }
-    
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }    
 })
 
-router.post('/addbatch' , async (req,res) => {
+router.post('/addbatch' ,verifyToken, async (req,res) => {
     const {pid,dDate,mDate,eDate,qty,uom,bp,sp} = req.body
     
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-    
     try {
-        verifyToken(req,res)
-
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         const uid = decoded.id
 
@@ -56,43 +40,40 @@ router.post('/addbatch' , async (req,res) => {
         
         await stock_history(uid,pid,bid)
 
-        res.status(200).json("BATCH ADDED SUCCESSFULLY");
+        return res.status(200).json("BATCH ADDED SUCCESSFULLY");
     } catch (err) {
-        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
-    }
-    
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }    
 })
 
-router.get('/getbatch/:bid' , async (req,res) => {
-    const {bid} = req.params
+router.get('/getbatch/:bid' ,verifyToken, async (req,res) => {
+    const {bid} = req.params        
 
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-    
+    if (!bid) {
+        return res.status(422).json({message: "missing argument." })
+    }
+
     try {
-        verifyToken(req,res)
-
         const batch = await getBatch(bid)
-        res.status(200).json(batch);
+        return res.status(200).json(batch);
     } catch (err) {
-        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err});
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err});
     }
     
 })
 
-router.get('/getitem/:barcode',async (req,res) =>{
-    const {barcode} = req.params;
+router.get('/getitem/:barcode',verifyToken, async (req,res) =>{
+    const {barcode} = req.params; 
 
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-    
+    if (!barcode) {
+        return res.status(422).json({message: "missing argument." })
+    }   
+
     try {
-        verifyToken(req,res)
-
         const item = await getItem(barcode)
-        res.status(200).json(item);
+        return res.status(200).json(item);
     } catch (err) {
-        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
 })
 

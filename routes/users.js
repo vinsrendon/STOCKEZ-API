@@ -41,15 +41,10 @@ router.get('/userbyid' , async (req,res) => {
     }    
 })
 
-router.post('/changeuserstatus' , async (req,res) => {
+router.post('/changeuserstatus' ,verifyToken, async (req,res) => {
     const {uid} = req.body
 
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-
-    try {
-        verifyToken(req,res);
-        
+    try {        
         await changeUserStatus(uid)
         return res.status(200).json({message:"User Status Successfully Changed"});
     } 
@@ -112,7 +107,7 @@ router.post("/logout", (req, res) => {
 
     clearCookies(res, cookiesToClear);
     
-    res.status(200).json({ message: "Logged out" });
+    return res.status(200).json({ message: "Logged out" });
 });
 
 function clearCookies(res, cookieNames) {
@@ -130,17 +125,14 @@ function clearCookies(res, cookieNames) {
     });
 }
 
-router.post("/register" , async (req,res) => {
+router.post("/register" ,verifyToken, async (req,res) => {
     const {username,password,role,flag,fname,mname,lname,pnumber,address} = req.body   
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
     if (!username || !password || !role || !flag|| !fname || !lname|| !pnumber|| !address) {
-        return res.status(200).json({message: "Fill all necessary fields." })
+        return res.status(422).json({message: "Fill all necessary fields." })
     }       
 
     try {
-        verifyToken(req,res)
-
         const hash = await bcrypt.hash(password,13) 
 
         await registerUser(username,hash,role,flag,fname,mname,lname,pnumber,address)
@@ -153,15 +145,11 @@ router.post("/register" , async (req,res) => {
     }
 })
 
-router.post("/resetpassword" , async (req,res) => {
+router.post("/resetpassword" ,verifyToken, async (req,res) => {
     const password = "password1"   
     const {uid} = req.body  
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
 
     try {
-        verifyToken(req,res)
-
         const hash = await bcrypt.hash(password,13) 
 
         await resetUserPassword(uid,hash)
@@ -172,19 +160,12 @@ router.post("/resetpassword" , async (req,res) => {
     }
 })
 
-router.get("/verify", (req, res) => {
+router.get("/verify",verifyToken, (req, res) => {
     const token = req.cookies.token;
     
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-
-    try {
-        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         
-        return res.status(200).json({message: "user verified", user: decoded});
-    } 
-    catch (err) {
-        return res.status(401).json({ message: "Invalid token" });
-    }
+    return res.status(200).json({message: "user verified", user: decoded});
 });
 
 module.exports = router

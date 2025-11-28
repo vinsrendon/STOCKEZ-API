@@ -11,15 +11,10 @@ const mysqldump = require('mysqldump')
 
 dotenv.config()
 
-router.get("/backup" , async (req,res) => {
-  const token = req.cookies.token;
-  if (!token) return res.status(401).json({ message: "Unauthorized" })
-  
+router.get("/backup" ,verifyToken, async (req,res) => {  
   if (!fs.existsSync(BACKUP_DIR)) {
     fs.mkdirSync(BACKUP_DIR)
   }
-  
-  verifyToken(req,res)
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const backupFile = path.join(BACKUP_DIR, `${process.env.MYSQL_DATABASE}-${timestamp}.sql`)
@@ -38,19 +33,17 @@ router.get("/backup" , async (req,res) => {
       dumpToFile: backupFile,
     });
     console.log('Dump completed');
-    res.status(200).json({ message: 'Backup created successfully', file: backupFile });
+    return res.status(200).json({ message: 'Backup created successfully', file: backupFile });
   } catch (error) {
-    res.status(500).json({ message: 'Backup failed', error: stderr || error.message});
+    return res.status(500).json({ message: 'Backup failed', error: stderr || error.message});
   }
 })
 
-router.post("/restore", async (req, res) => {
+router.post("/restore",verifyToken, async (req, res) => {
   const token = req.cookies.token;
-  if (!token) return res.status(401).json({ message: "Unauthorized" });
-
-  verifyToken(req, res);
-
+  
   const { fileName } = req.body;
+
   if (!fileName) return res.status(400).json({ message: "Backup file is required" });
 
   const backupFile = path.join(BACKUP_DIR, fileName);
@@ -93,7 +86,7 @@ router.post("/restore", async (req, res) => {
     await connection.commit();
     await connection.end();
 
-    res.status(200).json({ message: "Database restored successfully" });
+    return res.status(200).json({ message: "Database restored successfully" });
 
   } catch (error) {
     console.error("Restore failed:", error);
@@ -105,17 +98,12 @@ router.post("/restore", async (req, res) => {
         console.error("Rollback failed:", rollbackError);
       }
     }
-    res.status(500).json({ message: "Restore failed, changes rolled back", error: error.message });
+    return res.status(500).json({ message: "Restore failed, changes rolled back", error: error.message });
   }
 });
 
-router.get("/backups", (req, res) => {
-  const token = req.cookies.token;
-  if (!token) return res.status(401).json({ message: "Unauthorized" });
-
+router.get("/backups",verifyToken, (req, res) => {
   try {
-    verifyToken(req,res)
-    
     // Ensure directory exists
     if (!fs.existsSync(BACKUP_DIR)) {
       return res.status(404).json({ message: "No backup folder found" });
@@ -137,20 +125,15 @@ router.get("/backups", (req, res) => {
       })
       .sort((a, b) => b.createdAt - a.createdAt); // newest first
 
-    res.status(200).json({ backups: files });
+    return res.status(200).json({ backups: files });
   } catch (err) {
     console.error("Error listing backups:", err);
-    res.status(500).json({ message: "Failed to list backups", error: err.message });
+    return res.status(500).json({ message: "Failed to list backups", error: err.message });
   }
 });
 
-router.delete("/backups/:filename", (req, res) => {
-  const token = req.cookies.token;
-  if (!token) return res.status(401).json({ message: "Unauthorized" });
-
+router.delete("/backups/:filename",verifyToken, (req, res) => {
   try {
-    verifyToken(req,res)
-
     const { filename } = req.params;
     const filePath = path.join(BACKUP_DIR, filename);
 
@@ -165,9 +148,9 @@ router.delete("/backups/:filename", (req, res) => {
 
     fs.unlinkSync(filePath);
 
-    res.status(200).json({ message: "Backup file deleted successfully", filename });
+    return res.status(200).json({ message: "Backup file deleted successfully", filename });
   } catch (err) {
-    res.status(500).json({ message: "Failed to delete backup", error: err.message });
+    return res.status(500).json({ message: "Failed to delete backup", error: err.message });
   }
 });
 
