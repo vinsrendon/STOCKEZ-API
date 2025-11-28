@@ -65,7 +65,7 @@ async function generateReceiptNumber(){
     return receiptCode; // Example: "2025110043"    
 }
 
-router.post('/startCashierSession' , async (req,res) => {
+router.post('/startCashierSession' ,verifyToken, async (req,res) => {
     const {opening_balance} = req.body
     
     const token = req.cookies.token;
@@ -73,11 +73,8 @@ router.post('/startCashierSession' , async (req,res) => {
     if(!opening_balance)    return res.status(400).json({ message: "Missing opening balance" });
     
     if(isNaN(opening_balance))  return res.status(400).json({ message: "opening balance must be a valid number" });
-
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
     
     try {
-        verifyToken(req,res)
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         const cashier = decoded.id
         
@@ -94,14 +91,14 @@ router.post('/startCashierSession' , async (req,res) => {
         });
         
 
-        res.status(200).json({ message: "CASHIER SESSION STARTED SUCCESSFULLY" });
+        return res.status(200).json({ message: "CASHIER SESSION STARTED SUCCESSFULLY" })
     } catch (err) {
-        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
     
 })
 
-router.post('/endCashierSession' , async (req,res) => {
+router.post('/endCashierSession' ,verifyToken, async (req,res) => {
     const {closing_balance} = req.body
     
     const token = req.cookies.token;
@@ -110,75 +107,51 @@ router.post('/endCashierSession' , async (req,res) => {
     if(!closing_balance)    return res.status(400).json({ message: "Missing closing balance" });
 
     if(isNaN(closing_balance))  return res.status(400).json({ message: "closing balance must be a valid number" });    
-
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
     
-    try {
-        verifyToken(req,res)
-        
+    try {        
         await endCashierSession(cashierSessionId,closing_balance)
 
-        res.status(200).json({ message: "CASHIER SESSION ENDED SUCCESSFULLY" });
+        return res.status(200).json({ message: "CASHIER SESSION ENDED SUCCESSFULLY" });
     } catch (err) {
-        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
     
 })
 
-router.get('/getSalesHistories' , async (req,res) => {
-    const { from, to } = req.query;
-
-    const token = req.cookies.token;
-
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-
+router.get('/getSalesHistories' ,verifyToken, async (req,res) => {
+    const { from, to } = req.query
 
     try {
-        verifyToken(req,res);
-
         const history = await getSalesHistories(from,to)
 
-        return res.status(200).json(history);
+        return res.status(200).json(history)
     } 
     catch (err) {      
-        return res.status(500).json({ message: "Unexpected Error occurred",error:err });
+        return res.status(500).json({ message: "Unexpected Error occurred",error:err })
     }    
 })
 
-router.get('/getSalesHistory' , async (req,res) => {
+router.get('/getSalesHistory' ,verifyToken, async (req,res) => {
     const { hId } = req.query;
 
-    const token = req.cookies.token;
-
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-
-
     try {
-        verifyToken(req,res);
-
         const history = await getSalesHistory(hId)
 
-        return res.status(200).json(history);
+        return res.status(200).json(history)
     } 
     catch (err) {      
-        return res.status(500).json({ message: "Unexpected Error occurred",error:err });
+        return res.status(500).json({ message: "Unexpected Error occurred",error:err })
     }    
 })
 
-router.get('/getcashierproducts' , async (req,res) => {
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-    
+router.get('/getcashierproducts' ,verifyToken, async (req,res) => {    
     try {
-        verifyToken(req,res)
-
         const products = await getCashierProducts()
 
-        res.status(200).json(products);
+        return res.status(200).json(products)
     } catch (err) {
-        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
-    }
-    
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }    
 })
 
 

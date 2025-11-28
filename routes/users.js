@@ -9,11 +9,9 @@ dotenv.config()
 
 const  { getUsers , registerUser, loginUser, getUserById, changeUserStatus, resetUserPassword} = require('../database.js')
 
-router.get('/users' , async (req,res) => {
+router.get('/users' ,verifyToken, async (req,res) => {
     const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
     try {
-        verifyToken(req,res);
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         const users = await getUsers()
         const filteredUsers = users.filter(user => user.uid !== decoded.id);
@@ -24,15 +22,10 @@ router.get('/users' , async (req,res) => {
     }    
 })
 
-router.get('/userbyid' , async (req,res) => {
+router.get('/userbyid' ,verifyToken, async (req,res) => {
     const {uid} = req.body
 
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-
-    try {
-        verifyToken(req,res);
-        
+    try {        
         const user = await getUserById(uid)
         return res.status(200).json(user);
     } 
