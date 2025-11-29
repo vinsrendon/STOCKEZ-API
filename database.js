@@ -14,13 +14,13 @@ const pool = mysql2.createPool({
 
 async function checkConnection() {
   try {
-    const [rows] = await pool.query('SELECT 1');
-    console.log('Database connected successfully!');
+    const [rows] = await pool.query('SELECT 1')
+    console.log('Database connected successfully!')
   } catch (error) {
-    console.error('Database connection failed:', error);  
+    console.error('Database connection failed:', error)  
   }
 }
-checkConnection();
+checkConnection()
 
 //USERS
 export async function getUsers(){
@@ -38,29 +38,29 @@ export async function changeUserStatus(uid){
 }
 
 export async function registerUser(user,pass,role,flag,fname,mname,lname,pnumber,address){     
-    const conn = await pool.getConnection();
+    const conn = await pool.getConnection()
 
     try {
-        await conn.beginTransaction();
+        await conn.beginTransaction()
 
         const [userResult] = await conn.execute(`
             INSERT INTO users (username, password, role, status) 
             VALUES (?, ?, ?, ?)`, 
-            [user, pass, role, flag]);
+            [user, pass, role, flag])
 
-        const newUserId = userResult.insertId;
+        const newUserId = userResult.insertId
 
         await conn.execute(`
             INSERT INTO users_info (uid, firstname, middlename, lastname, phone_number, address)
             VALUES (?, ?, ?, ?, ?, ?)`, 
-            [newUserId, fname, mname, lname, pnumber, address]);
+            [newUserId, fname, mname, lname, pnumber, address])
 
-        await conn.commit();
+        await conn.commit()
     } catch (err) {
-        await conn.rollback();
-        throw err;
+        await conn.rollback()
+        throw err
     } finally {
-        conn.release();
+        conn.release()
     }
 }
 
@@ -77,8 +77,8 @@ export async function resetUserPassword(uid,pass){
 export async function getExpenses() {
     const [rows] = await pool.execute(`SELECT
     expense_id,biller,expense_decs,expense_amount,DATE_FORMAT(expense_date, '%Y-%m-%d')
-    AS formatted_expense_date FROM expenses ORDER BY expense_date DESC`);
-    return rows;
+    AS formatted_expense_date FROM expenses ORDER BY expense_date DESC`)
+    return rows
 }
 
 export async function addExpense(biller,expense_desc,expense_amount,expense_date){
@@ -135,19 +135,49 @@ export async function stock_history(uid,pid,bid){
 
 // CASHIER
 export async function getCashierProducts(){
-    const [products] = await pool.execute(`SELECT p.*, SUM(b.quantity) AS totalQty FROM products p INNER JOIN product_batches b ON p.product_id = b.product_id GROUP BY p.product_id`)
+    const [products] = await pool.execute(`SELECT p.*, SUM(b.quantity) AS totalQty 
+    FROM products p INNER JOIN product_batches b ON p.product_id = b.product_id GROUP BY p.product_id`)
     return products
 }
 
-export async function addPurchaseHistory(receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod){
-    const [result] = await pool.execute(`INSERT INTO purchase_history(receipt_number,cashier,purchase_total,amount_tendered,amount_change,payment_method)
-    VALUES(?,?,?,?,?,?)`,[receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod])
-    return result.insertId
-}
+export async function savePurchase(receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod,items){
+    const conn = await pool.getConnection()
 
-export async function addPurchaseHistoryItems(purchase_id,batch_id,qty){
-    await pool.execute(`INSERT INTO purchase_history_items(purchase_id,batch_id,qty)
-    VALUES(?,?,?)`,[purchase_id,batch_id,qty])
+    try {
+        await conn.beginTransaction()
+
+        const [result] = await conn.execute(`INSERT INTO 
+        purchase_history(receipt_number,cashier,purchase_total,amount_tendered,amount_change,payment_method) 
+        VALUES(?,?,?,?,?,?)`,[receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod])
+        const purchase_id = result.insertId
+        
+        if (Array.isArray(items)) {
+            for (const item of items) {                
+                await conn.execute(`INSERT INTO 
+                purchase_history_items(purchase_id,batch_id,qty)
+                VALUES(?,?,?)`,[purchase_id,item.batch_id,item.quantity]) 
+
+                const [result] = await conn.execute(`UPDATE product_batches 
+                SET quantity = quantity - ? WHERE batch_id = ? AND quantity >= ?`,[item.quantity, item.batch_id, item.quantity])
+                
+                if (result.affectedRows === 0) {
+                    console.log("here");
+                    
+                    let err = new Error("Not enough stock in this batch")
+                    err.code = "INSUFFICIENT_STOCK"
+                    throw err
+                }
+            }
+        }
+        await conn.commit()
+    } catch (err) {
+        await conn.rollback()
+        console.log(err);
+        
+        throw err
+    } finally {
+        conn.release()
+    }
 }
 
 export async function startCashierSession(user_id, opening_balance){
@@ -160,16 +190,21 @@ export async function endCashierSession(cashierSessionId, closing_balance){
 }
 
 export async function getLastReceiptNumber(prefix){
-    const [rows] = await pool.execute(`SELECT receipt_number FROM purchase_history WHERE receipt_number LIKE ? ORDER BY receipt_number DESC LIMIT 1`,[`${prefix}%`]);
+    const [rows] = await pool.execute(`SELECT receipt_number 
+    FROM purchase_history WHERE receipt_number LIKE ? ORDER BY receipt_number DESC LIMIT 1`,[`${prefix}%`])
     return rows
 }
 
 export async function getSalesHistories(from,to){
     if (!from || !to) {
-        const [histories] = await pool.execute(`SELECT purchase_Id,receipt_number,purchase_date,DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date from purchase_history`)        
+        const [histories] = await pool.execute(`SELECT 
+        purchase_Id,receipt_number,purchase_date,DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') 
+        AS formatted_purchase_date from purchase_history`)        
         return histories
     } else {
-        const [histories] = await pool.execute(`SELECT purchase_Id,receipt_number,purchase_date,DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date from purchase_history where date(purchase_date) between ? and ?`,[from,to])
+        const [histories] = await pool.execute(`SELECT 
+        purchase_Id,receipt_number,purchase_date,DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') 
+        AS formatted_purchase_date from purchase_history where date(purchase_date) between ? and ?`,[from,to])
         return histories   
     }
 }
@@ -182,19 +217,17 @@ export async function getSalesHistory(hId){
         FROM purchase_history p
         JOIN users_info si ON p.cashier = si.uid
         WHERE p.purchase_id = ?
-    `, [hId]);
+    `, [hId])
 
-    if (headerRows.length === 0) return null;
-
-    const header = headerRows[0];
+    if (headerRows.length === 0) return null
 
     const [items] = await pool.execute(`
         SELECT p.barcode,p.description,pb.UOM,phi.qty,pb.sell_price from purchase_history_items phi 
         JOIN product_batches pb ON phi.batch_id = pb.batch_id 
         JOIN products p ON pb.product_id = p.product_id
         where phi.purchase_id = ?
-    `, [hId]);
+    `, [hId])
 
-return [ headerRows, items ];
+    return [ headerRows, items ]
 
 }

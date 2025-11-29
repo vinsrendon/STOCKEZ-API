@@ -7,7 +7,7 @@ const paymongo = require('@api/paymongo');
 
 dotenv.config()
 
-const  { addPurchaseHistory, addPurchaseHistoryItems, startCashierSession, endCashierSession, getLastReceiptNumber, getSalesHistory,getSalesHistories, getCashierProducts} = require('../database.js')
+const  { startCashierSession, endCashierSession, getLastReceiptNumber, getSalesHistory,getSalesHistories, getCashierProducts, savePurchase} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
 router.post('/savepurchasehistory' ,verifyToken, async (req,res) => {
@@ -26,18 +26,16 @@ router.post('/savepurchasehistory' ,verifyToken, async (req,res) => {
         const cashier = decoded.id
 
         const receiptNumber = await generateReceiptNumber()            
-        
-        const purchase_id = await addPurchaseHistory(receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod)
 
-        if (Array.isArray(items)) {
-            for (const item of items) {
-                await addPurchaseHistoryItems(purchase_id, item.batch_id,item.quantity)
-            }
-        }
+        await savePurchase(receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod,items)
 
         return res.status(200).json({ message: "PURCHASE HISTORY SAVED" ,receiptNumber:receiptNumber});
     } catch (err) {
-        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+        if (err.code === "INSUFFICIENT_STOCK") {
+            return res.status(422).json({message: "NOT ENOUGH STOCK"})
+        } else {
+            return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+        }
     }
     
 })
@@ -90,8 +88,7 @@ router.post('/startCashierSession' ,verifyToken, async (req,res) => {
         sameSite: isDev ? "lax" : "none",
         maxAge: 60 * 60 * 12000,
         partitioned: !isDev,
-        });
-        
+        })        
 
         return res.status(200).json({ message: "CASHIER SESSION STARTED SUCCESSFULLY" })
     } catch (err) {
@@ -106,9 +103,9 @@ router.post('/endCashierSession' ,verifyToken, async (req,res) => {
     const token = req.cookies.token;
     const cashierSessionId = req.cookies.cashierSessionId;
 
-    if(!closing_balance)    return res.status(400).json({ message: "Missing closing balance" });
+    if(!closing_balance) return res.status(400).json({ message: "Missing closing balance" });
 
-    if(isNaN(closing_balance))  return res.status(400).json({ message: "closing balance must be a valid number" });    
+    if(isNaN(closing_balance)) return res.status(400).json({ message: "closing balance must be a valid number" });    
     
     try {        
         await endCashierSession(cashierSessionId,closing_balance)
