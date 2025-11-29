@@ -81,7 +81,7 @@ router.get('/mostsoldtoday',verifyToken, async (req,res) =>{
     try {
         const items = await mostSoldToday()     
         if (!items || items.length === 0) {
-            return res.status(404).json({
+            return res.status(203).json({
                 message: "No sales found for this day"
             });
         }
@@ -94,7 +94,7 @@ router.get('/mostsoldmonth',verifyToken, async (req,res) =>{
     try {
         const items = await mostSoldMonth()
         if (!items || items.length === 0) {
-            return res.status(404).json({message: "No sales found for this day"})
+            return res.status(203).json({message: "No sales found for this day"})
         }
         return res.status(200).json(items)
     } catch (err) {
