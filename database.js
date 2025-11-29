@@ -133,6 +133,51 @@ export async function stock_history(uid,pid,bid){
     await pool.execute(`INSERT INTO stock_history(stocked_by,product_id,batch_id) VALUES(?,?,?)`,[uid,pid,bid])
 }
 
+export async function mostSoldToday(){    
+    try {
+        const [result] = await pool.execute(`SELECT 
+        p.product_id,
+        p.description,
+        p.barcode,
+        SUM(phi.qty) AS total_sold
+        FROM purchase_history_items phi
+        JOIN purchase_history ph 
+            ON ph.purchase_id = phi.purchase_id
+        JOIN product_batches pb
+            ON pb.batch_id = phi.batch_id
+        JOIN products p
+            ON p.product_id = pb.product_id
+        WHERE DATE(ph.purchase_date) = CURDATE()   -- today
+        GROUP BY p.product_id
+        ORDER BY total_sold DESC
+        LIMIT 5`)
+        return result
+    } catch (error) {
+        throw error
+    }
+}
+
+export async function mostSoldMonth(){    
+    try {
+        const [result] = await pool.execute(`SELECT 
+        p.product_id,
+        p.description,
+        p.barcode,
+        SUM(phi.qty) AS total_sold
+        FROM purchase_history_items phi
+        JOIN purchase_history ph ON ph.purchase_id = phi.purchase_id
+        JOIN product_batches pb ON pb.batch_id = phi.batch_id
+        JOIN products p ON p.product_id = pb.product_id
+        WHERE YEAR(ph.purchase_date) = YEAR(CURDATE()) AND MONTH(ph.purchase_date) = MONTH(CURDATE())  -- current month
+        GROUP BY p.product_id
+        ORDER BY total_sold DESC
+        LIMIT 5`)
+        return result
+    } catch (error) {
+        throw error
+    }
+}
+
 // CASHIER
 export async function getCashierProducts(){
     const [products] = await pool.execute(`SELECT p.*, SUM(b.quantity) AS totalQty 

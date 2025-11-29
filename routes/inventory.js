@@ -2,7 +2,7 @@ const express = require("express")
 const jwt = require("jsonwebtoken")
 const router = express.Router()
 
-const  { addProduct, getProducts, addBatch, getBatch, getItem, stock_history} = require('../database.js')
+const  { addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
 router.post("/addproduct" ,verifyToken, async (req,res) => {
@@ -23,7 +23,7 @@ router.post("/addproduct" ,verifyToken, async (req,res) => {
 router.get('/getproducts' ,verifyToken, async (req,res) => {    
     try {
         const products = await getProducts()
-        return res.status(200).json(products);
+        return res.status(200).json(products)
     } catch (err) {
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }    
@@ -55,15 +55,15 @@ router.get('/getbatch/:bid' ,verifyToken, async (req,res) => {
 
     try {
         const batch = await getBatch(bid)
-        return res.status(200).json(batch);
+        return res.status(200).json(batch)
     } catch (err) {
-        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err});
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
     
 })
 
 router.get('/getitem/:barcode',verifyToken, async (req,res) =>{
-    const {barcode} = req.params; 
+    const {barcode} = req.params
 
     if (!barcode) {
         return res.status(422).json({message: "missing argument." })
@@ -71,10 +71,36 @@ router.get('/getitem/:barcode',verifyToken, async (req,res) =>{
 
     try {
         const item = await getItem(barcode)
-        return res.status(200).json(item);
+        return res.status(200).json(item)
     } catch (err) {
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
 })
+
+router.get('/mostsoldtoday',verifyToken, async (req,res) =>{
+    try {
+        const items = await mostSoldToday()     
+        if (!items || items.length === 0) {
+            return res.status(404).json({
+                message: "No sales found for this day"
+            });
+        }
+        return res.status(200).json(items);
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
+router.get('/mostsoldmonth',verifyToken, async (req,res) =>{
+    try {
+        const items = await mostSoldMonth()
+        if (!items || items.length === 0) {
+            return res.status(404).json({message: "No sales found for this day"})
+        }
+        return res.status(200).json(items)
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
+
 
 module.exports = router
