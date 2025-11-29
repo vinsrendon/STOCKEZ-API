@@ -2,6 +2,8 @@ const express = require("express")
 const router = express.Router()
 const jwt = require("jsonwebtoken")
 const dotenv = require('dotenv')
+const paymongo = require('@api/paymongo');
+
 
 dotenv.config()
 
@@ -9,7 +11,7 @@ const  { addPurchaseHistory, addPurchaseHistoryItems, startCashierSession, endCa
 const { verifyToken } = require("./verify.js")
 
 router.post('/savepurchasehistory' ,verifyToken, async (req,res) => {
-    const {purchase_total,amount_tendered,amount_change,items} = req.body
+    const {purchase_total,amount_tendered,amount_change,items,paymentMethod} = req.body
     
     const token = req.cookies.token;
 
@@ -25,7 +27,7 @@ router.post('/savepurchasehistory' ,verifyToken, async (req,res) => {
 
         const receiptNumber = await generateReceiptNumber()            
         
-        const purchase_id = await addPurchaseHistory(receiptNumber,cashier,purchase_total,amount_tendered,amount_change)
+        const purchase_id = await addPurchaseHistory(receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod)
 
         if (Array.isArray(items)) {
             for (const item of items) {
