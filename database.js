@@ -178,6 +178,43 @@ export async function mostSoldMonth(){
     }
 }
 
+export async function redAlertStock(){    
+    try {
+        const [result] = await pool.execute(`SELECT 
+        p.product_id,
+        p.barcode,
+        p.description,
+        pb.batch_id,
+        pb.quantity
+        FROM products p
+        JOIN product_batches pb ON p.product_id = pb.product_id
+        WHERE pb.quantity <= 10
+        ORDER BY pb.quantity ASC`)
+        return result
+    } catch (error) {
+        throw error
+    }
+}
+
+export async function yellowAlertStock(){    
+    try {
+        const [result] = await pool.execute(`SELECT 
+        p.product_id,
+        p.barcode,
+        p.description,
+        pb.batch_id,
+        pb.quantity
+        FROM products p
+        JOIN product_batches pb ON p.product_id = pb.product_id
+        WHERE pb.quantity > 10 AND pb.quantity <= 20
+        ORDER BY pb.quantity ASC`)
+        return result
+    } catch (error) {
+        throw error
+    }
+}
+
+
 // CASHIER
 export async function getCashierProducts(){
     const [products] = await pool.execute(`SELECT p.*, SUM(b.quantity) AS totalQty 

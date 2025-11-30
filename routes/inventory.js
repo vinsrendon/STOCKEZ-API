@@ -2,7 +2,7 @@ const express = require("express")
 const jwt = require("jsonwebtoken")
 const router = express.Router()
 
-const  { addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth} = require('../database.js')
+const  { addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth, redAlertStock, yellowAlertStock} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
 router.post("/addproduct" ,verifyToken, async (req,res) => {
@@ -94,7 +94,29 @@ router.get('/mostsoldmonth',verifyToken, async (req,res) =>{
     try {
         const items = await mostSoldMonth()
         if (!items || items.length === 0) {
-            return res.status(203).json({message: "No sales found for this day"})
+            return res.status(203).json({message: "NO SALES FOR THIS MONTH"})
+        }
+        return res.status(200).json(items)
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
+router.get('/redalert',verifyToken, async (req,res) =>{
+    try {
+        const items = await redAlertStock()
+        if (!items || items.length === 0) {
+            return res.status(203).json({message: "NO RED ALERT STOCK"})
+        }
+        return res.status(200).json(items)
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
+router.get('/yellowalert',verifyToken, async (req,res) =>{
+    try {
+        const items = await yellowAlertStock()
+        if (!items || items.length === 0) {
+            return res.status(203).json({message: "NO YELLOW ALERT STOCK"})
         }
         return res.status(200).json(items)
     } catch (err) {
