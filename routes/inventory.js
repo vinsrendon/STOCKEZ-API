@@ -1,6 +1,9 @@
 const express = require("express")
 const jwt = require("jsonwebtoken")
 const router = express.Router()
+const dotenv = require('dotenv')
+
+dotenv.config()
 
 const  { addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth, redAlertStock, yellowAlertStock} = require('../database.js')
 const { verifyToken } = require("./verify.js")
@@ -31,14 +34,23 @@ router.get('/getproducts' ,verifyToken, async (req,res) => {
 
 router.post('/addbatch' ,verifyToken, async (req,res) => {
     const {pid,dDate,mDate,eDate,qty,uom,bp,sp} = req.body
-    
+    const token = req.cookies.token;
     try {
-        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        let decoded
+        try {
+             decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)                  
+        } catch (error) {
+            return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:error})
+        }
         const uid = decoded.id
 
         const bid = await addBatch(pid,dDate,mDate,eDate,qty,uom,bp,sp)
         
-        await stock_history(uid,pid,bid)
+        try {
+            await stock_history(uid,pid,bid)
+        } catch (error) {            
+            return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:error})
+        }
 
         return res.status(200).json("BATCH ADDED SUCCESSFULLY");
     } catch (err) {

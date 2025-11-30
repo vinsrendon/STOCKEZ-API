@@ -98,10 +98,14 @@ export async function getProducts(){
 }
 
 export async function addBatch(pid,dDate,mDate,eDate,qty,uom,bp,sp){
-    const [result] = await pool.execute(`INSERT INTO 
-    product_batches(product_id,delivery_date,manufacturing_date,expiration_date,quantity,UOM,buy_price,sell_price)
-    VALUES(?,?,?,?,?,?,?,?)`,[pid,dDate,mDate,eDate,qty,uom,bp,sp])
-    return result.insertId
+    try {
+        const [result] = await pool.execute(`INSERT INTO 
+        product_batches(product_id,delivery_date,manufacturing_date,expiration_date,quantity,UOM,buy_price,sell_price)
+        VALUES(?,?,?,?,?,?,?,?)`,[pid,dDate,mDate,eDate,qty,uom,bp,sp])
+        return result.insertId
+    } catch (error) {
+        throw error
+    }
 }
 
 export async function getBatch(bid){
@@ -130,7 +134,11 @@ export async function getItem(barcode){
 }
 
 export async function stock_history(uid,pid,bid){
-    await pool.execute(`INSERT INTO stock_history(stocked_by,product_id,batch_id) VALUES(?,?,?)`,[uid,pid,bid])
+    try {
+        await pool.execute(`INSERT INTO stock_history(stocked_by,product_id,batch_id) VALUES(?,?,?)`,[uid,pid,bid])
+    } catch (error) {
+        throw error
+    }
 }
 
 export async function mostSoldToday(){    
@@ -217,7 +225,7 @@ export async function yellowAlertStock(){
 
 // CASHIER
 export async function getCashierProducts(){
-    const [products] = await pool.execute(`SELECT p.*, SUM(b.quantity) AS totalQty 
+    const [products] = await pool.execute(`SELECT *, SUM(b.quantity) AS totalQty 
     FROM products p INNER JOIN product_batches b ON p.product_id = b.product_id GROUP BY p.product_id`)
     return products
 }
