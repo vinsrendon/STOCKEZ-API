@@ -5,7 +5,7 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-const  { addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth, redAlertStock, yellowAlertStock} = require('../database.js')
+const  { addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth, lowStockAlert} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
 router.post("/addproduct" ,verifyToken, async (req,res) => {
@@ -94,7 +94,7 @@ router.get('/mostsoldtoday',verifyToken, async (req,res) =>{
         const items = await mostSoldToday()     
         if (!items || items.length === 0) {
             return res.status(203).json({
-                message: "No sales found for this day"
+                message: "NO SALES FOUND ON THIS DAY"
             });
         }
         return res.status(200).json(items);
@@ -106,29 +106,18 @@ router.get('/mostsoldmonth',verifyToken, async (req,res) =>{
     try {
         const items = await mostSoldMonth()
         if (!items || items.length === 0) {
-            return res.status(203).json({message: "NO SALES FOR THIS MONTH"})
+            return res.status(203).json({message: "NO SALES FOUND FOR THIS MONTH"})
         }
         return res.status(200).json(items)
     } catch (err) {
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
 })
-router.get('/redalert',verifyToken, async (req,res) =>{
+router.get('/lowstockalert',verifyToken, async (req,res) =>{
     try {
-        const items = await redAlertStock()
+        const items = await lowStockAlert()
         if (!items || items.length === 0) {
-            return res.status(203).json({message: "NO RED ALERT STOCK"})
-        }
-        return res.status(200).json(items)
-    } catch (err) {
-        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
-    }
-})
-router.get('/yellowalert',verifyToken, async (req,res) =>{
-    try {
-        const items = await yellowAlertStock()
-        if (!items || items.length === 0) {
-            return res.status(203).json({message: "NO YELLOW ALERT STOCK"})
+            return res.status(203).json({message: "STOCK ON NORMAL LEVEL"})
         }
         return res.status(200).json(items)
     } catch (err) {
