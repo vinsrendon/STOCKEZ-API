@@ -188,29 +188,34 @@ export async function mostSoldMonth(){
 
 export async function lowStockAlert(){    
     try {
+        // const [result] = await pool.execute(`SELECT 
+        //     p.product_id,
+        //     p.barcode,        
+        //     p.description,
+        //     pb.UOM,
+        //     pb.batch_id,
+        //     pb.quantity,
+        // SUM(pb.quantity) AS totalQty
+        // FROM products p
+        // JOIN product_batches pb ON p.product_id = pb.product_id
+        // GROUP BY 
+        //     p.product_id
+        // HAVING 
+        //     totalQty <= 20
+        // ORDER BY p.product_id ASC`)
         const [result] = await pool.execute(`SELECT 
-            *,
+        p.product_id,
+        p.barcode,
+        p.description,
+        MIN(pb.UOM) AS UOM,           -- or MAX(pb.UOM)
+        MIN(pb.batch_id) AS batch_id, -- optional, usually not meaningful
+        MIN(pb.quantity) AS quantity, -- last seen quantity, probably not useful
         SUM(pb.quantity) AS totalQty
         FROM products p
         JOIN product_batches pb ON p.product_id = pb.product_id
-        GROUP BY 
-            p.product_id
-        HAVING 
-            totalQty <= 20
+        GROUP BY p.product_id, p.barcode, p.description  -- must include non-aggregated columns
+        HAVING SUM(pb.quantity) <= 20
         ORDER BY p.product_id ASC`)
-        // const [result] = await pool.execute(`SELECT 
-        // p.product_id,
-        // p.barcode,
-        // p.description,
-        // pb.UOM,
-        // pb.batch_id,
-        // pb.quantity,
-        // SUM(pb.quantity) OVER (PARTITION BY p.product_id) AS totalQty
-        // FROM products p
-        // JOIN product_batches pb ON p.product_id = pb.product_id
-        // WHERE 
-        //     SUM(pb.quantity) OVER (PARTITION BY p.product_id) <= 20
-        // ORDER BY p.product_id ASC`)
         return result
     } catch (error) {
         throw error
