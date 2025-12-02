@@ -189,12 +189,7 @@ export async function mostSoldMonth(){
 export async function lowStockAlert(){    
     try {
         const [result] = await pool.execute(`SELECT 
-            p.product_id,
-            p.barcode,        
-            p.description,
-            pb.UOM,
-            pb.batch_id,
-            pb.quantity,
+            *,
         SUM(pb.quantity) AS totalQty
         FROM products p
         JOIN product_batches pb ON p.product_id = pb.product_id
@@ -203,6 +198,19 @@ export async function lowStockAlert(){
         HAVING 
             totalQty <= 20
         ORDER BY p.product_id ASC`)
+        // const [result] = await pool.execute(`SELECT 
+        // p.product_id,
+        // p.barcode,
+        // p.description,
+        // pb.UOM,
+        // pb.batch_id,
+        // pb.quantity,
+        // SUM(pb.quantity) OVER (PARTITION BY p.product_id) AS totalQty
+        // FROM products p
+        // JOIN product_batches pb ON p.product_id = pb.product_id
+        // WHERE 
+        //     SUM(pb.quantity) OVER (PARTITION BY p.product_id) <= 20
+        // ORDER BY p.product_id ASC`)
         return result
     } catch (error) {
         throw error
