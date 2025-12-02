@@ -198,8 +198,6 @@ export async function lowStockAlert(){
         SUM(pb.quantity) AS totalQty
         FROM products p
         JOIN product_batches pb ON p.product_id = pb.product_id
-        GROUP BY 
-            p.product_id
         HAVING 
             totalQty <= 20
         ORDER BY p.product_id ASC`)
