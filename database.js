@@ -200,9 +200,6 @@ export async function lowStockAlert(){
         JOIN product_batches pb ON p.product_id = pb.product_id
         GROUP BY 
             p.product_id
-            p.product_id,
-            p.barcode,        
-            p.description
         HAVING 
             totalQty <= 20
         ORDER BY p.product_id ASC`)
