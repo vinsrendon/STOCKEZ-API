@@ -188,21 +188,6 @@ export async function mostSoldMonth(){
 
 export async function lowStockAlert(){    
     try {
-        // const [result] = await pool.execute(`SELECT 
-        //     p.product_id,
-        //     p.barcode,        
-        //     p.description,
-        //     pb.UOM,
-        //     pb.batch_id,
-        //     pb.quantity,
-        // SUM(pb.quantity) AS totalQty
-        // FROM products p
-        // JOIN product_batches pb ON p.product_id = pb.product_id
-        // GROUP BY 
-        //     p.product_id
-        // HAVING 
-        //     totalQty <= 20
-        // ORDER BY p.product_id ASC`)
         const [result] = await pool.execute(`SELECT 
         p.product_id,
         p.barcode,
@@ -285,19 +270,6 @@ export async function getLastReceiptNumber(prefix){
     return rows
 }
 
-// export async function getSalesHistories(from,to){
-//     if (!from || !to) {
-//         const [histories] = await pool.execute(`SELECT 
-//         purchase_Id,receipt_number,purchase_date,DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') 
-//         AS formatted_purchase_date from purchase_history`)        
-//         return histories
-//     } else {
-//         const [histories] = await pool.execute(`SELECT 
-//         purchase_Id,receipt_number,purchase_date,DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') 
-//         AS formatted_purchase_date from purchase_history where date(purchase_date) between ? and ?`,[from,to])
-//         return histories   
-//     }
-// }
 export async function getSalesHistories({ from, to, page, limit, search }) {
     const offset = (page - 1) * limit;
 
@@ -362,4 +334,10 @@ export async function getSalesHistory(hId){
 
     return [ headerRows, items ]
 
+}
+
+//CASHFLOW
+
+export async function getCashflowRows(from,to) {
+  
 }

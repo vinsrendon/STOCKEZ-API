@@ -47,5 +47,6 @@ const expenseRouter = require("./routes/expenses.js")
 const inventoryRouter = require("./routes/inventory.js")
 const maintenanceRouter = require("./routes/maintenance.js")
 const cashierRouter = require("./routes/cashier.js")
+const cashflowRouter = require("./routes/cashflow.js")
 
-app.use(userRouter , expenseRouter, inventoryRouter, maintenanceRouter,cashierRouter)
+app.use(userRouter , expenseRouter, inventoryRouter, maintenanceRouter,cashierRouter,cashflowRouter)
