@@ -117,18 +117,46 @@ router.post('/endCashierSession' ,verifyToken, async (req,res) => {
     
 })
 
-router.get('/getSalesHistories' ,verifyToken, async (req,res) => {
-    const { from, to } = req.query
+// router.get('/getSalesHistories' ,verifyToken, async (req,res) => {
+//     const { from, to } = req.query
 
+//     try {
+//         const history = await getSalesHistories(from,to)
+
+//         return res.status(200).json(history)
+//     } 
+//     catch (err) {      
+//         return res.status(500).json({ message: "Unexpected Error occurred",error:err })
+//     }    
+// })
+router.get('/getSalesHistories', verifyToken, async (req, res) => {
     try {
-        const history = await getSalesHistories(from,to)
+        const {
+            from = null,
+            to = null,
+            page = 1,
+            limit = 10,
+            search = ""
+        } = req.query;
 
-        return res.status(200).json(history)
+        const history = await getSalesHistories({
+            from,
+            to,
+            page: Number(page),
+            limit: Number(limit),
+            search
+        });
+
+        return res.status(200).json(history);
     } 
     catch (err) {      
-        return res.status(500).json({ message: "Unexpected Error occurred",error:err })
+        console.error(err);
+        return res.status(500).json({
+            message: "Unexpected Error occurred",
+            error: err
+        });
     }    
-})
+});
 
 router.get('/getSalesHistory' ,verifyToken, async (req,res) => {
     const { hId } = req.query;
