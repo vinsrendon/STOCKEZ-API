@@ -5,7 +5,7 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-const  { addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth, lowStockAlert} = require('../database.js')
+const  { addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth, lowStockAlert, getCategories, addCategory, dltCategory} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
 router.post("/addproduct" ,verifyToken, async (req,res) => {
@@ -16,7 +16,7 @@ router.post("/addproduct" ,verifyToken, async (req,res) => {
     }       
 
     try {
-        await addProduct(barcode,description,category)        
+        await addProduct(barcode,description.toUpperCase(),category)        
         res.status(200).json({message: "PRODUCT ADDED SUCCESSFULLY"})
     } catch (err) {
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
@@ -52,7 +52,7 @@ router.post('/addbatch' ,verifyToken, async (req,res) => {
             return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:error})
         }
 
-        return res.status(200).json("BATCH ADDED SUCCESSFULLY");
+        return res.status(200).json({message: "BATCH ADDED SUCCESSFULLY"})
     } catch (err) {
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }    
@@ -124,6 +124,47 @@ router.get('/lowstockalert',verifyToken, async (req,res) =>{
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
 })
+router.get('/getcategories',verifyToken, async (req,res) =>{
+    try {
+        const categories = await getCategories()
+        if (!categories || categories.length === 0) {
+            return res.status(404).json({message: "NO CATEGORIES FOUND"})
+        }
+        return res.status(200).json(categories)
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
+router.post('/addcategory',verifyToken, async (req,res) =>{
+    const {category_name} = req.body
+    if(!category_name){
+        return res.status(422).json({ message: "Fill all necessary fields." })
+    }
+    try {
+        await addCategory(category_name.toUpperCase())
+        return res.status(200).json({message: "CATEGORY ADDED SUCCESSFULLY"})
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
+router.delete('/dltcategory',verifyToken, async (req,res) =>{
+    const {category_id} = req.query
+    console.log(category_id);
+    
+    if(!category_id){
+        return res.status(422).json({ message: "Fill all necessary fields." })
+    }
+    try {
+        const row = await dltCategory(category_id)
 
+        if (row === 0) {
+            return res.status(404).json({ message: "CATEGORY NOT FOUND" });
+        }
+
+        return res.status(200).json({message: "CATEGORY DELETED SUCCESSFULLY"})
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
 
 module.exports = router

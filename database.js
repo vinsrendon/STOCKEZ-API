@@ -93,7 +93,7 @@ export async function addProduct(barcode,description,category){
 }
 
 export async function getProducts(){
-    const [products] = await pool.execute(`SELECT * FROM products`)
+    const [products] = await pool.execute(`SELECT p.barcode,p.description,p.product_id,c.category_name FROM products p JOIN category c ON p.category = c.category_id`)
     return products
 }
 
@@ -207,6 +207,31 @@ export async function lowStockAlert(){
     }
 }
 
+export async function getCategories(){    
+    try {
+        const [result] = await pool.execute(`SELECT * FROM category`)
+        return result
+    } catch (error) {
+        throw error
+    }
+}
+
+export async function addCategory(category_name){    
+    try {
+        await pool.execute(`INSERT INTO category(category_name) VALUES(?)`,[category_name])
+    } catch (error) {
+        throw error
+    }
+}
+export async function dltCategory(category_id){    
+    try {
+        const [result] = await pool.execute(`DELETE FROM category WHERE category.category_id = ?`,[category_id])
+        return result.affectedRows
+    } catch (error) {
+        throw error
+    }
+}
+
 
 // CASHIER
 export async function getCashierProducts(){
@@ -236,7 +261,7 @@ export async function savePurchase(receiptNumber,cashier,purchase_total,amount_t
                 SET quantity = quantity - ? WHERE batch_id = ? AND quantity >= ?`,[item.quantity, item.batch_id, item.quantity])
                 
                 if (result.affectedRows === 0) {
-                    console.log("here");
+                    console.log("here")
                     
                     let err = new Error("Not enough stock in this batch")
                     err.code = "INSUFFICIENT_STOCK"
@@ -247,7 +272,7 @@ export async function savePurchase(receiptNumber,cashier,purchase_total,amount_t
         await conn.commit()
     } catch (err) {
         await conn.rollback()
-        console.log(err);
+        console.log(err)
         
         throw err
     } finally {
@@ -271,32 +296,30 @@ export async function getLastReceiptNumber(prefix){
 }
 
 export async function getSalesHistories({ from, to, page, limit, search }) {
-    const offset = (page - 1) * limit;
+    const offset = (page - 1) * limit
 
-    let where = "WHERE 1=1";
-    let params = [];
+    let where = "WHERE 1=1"
+    let params = []
 
-    // Search receipt #
+
     if (search) {
-        where += " AND receipt_number LIKE ?";
-        params.push(`%${search}%`);
+        where += " AND receipt_number LIKE ?"
+        params.push(`%${search}%`)
     }
 
-    // Date filter
+
     if (from && to) {
-        where += " AND DATE(purchase_date) BETWEEN ? AND ?";
-        params.push(from, to);
+        where += " AND DATE(purchase_date) BETWEEN ? AND ?"
+        params.push(from, to)
     }
 
-    // Total count
+
     const [countRows] = await pool.execute(
-        `SELECT COUNT(*) AS total FROM purchase_history ${where}`,
-        params
-    );
+        `SELECT COUNT(*) AS total FROM purchase_history ${where}`,params)
 
-    const total = countRows[0].total;
+    const total = countRows[0].total
 
-    // Paginated data
+
     const [rows] = await pool.execute(
         `SELECT 
             purchase_Id,
@@ -308,9 +331,9 @@ export async function getSalesHistories({ from, to, page, limit, search }) {
         ORDER BY purchase_date DESC
         LIMIT ? OFFSET ?`,
         [...params, limit, offset]
-    );
+    )
 
-    return { data: rows, total, page, limit };
+    return { data: rows, total, page, limit }
 }
 
 export async function getSalesHistory(hId){
