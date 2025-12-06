@@ -240,15 +240,15 @@ export async function getCashierProducts(){
     return products
 }
 
-export async function savePurchase(receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod,items){
+export async function savePurchase(cs_id,receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod,items){
     const conn = await pool.getConnection()
 
     try {
         await conn.beginTransaction()
 
         const [result] = await conn.execute(`INSERT INTO 
-        purchase_history(receipt_number,cashier,purchase_total,amount_tendered,amount_change,payment_method) 
-        VALUES(?,?,?,?,?,?)`,[receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod])
+        purchase_history(cs_id,receipt_number,cashier,purchase_total,amount_tendered,amount_change,payment_method) 
+        VALUES(?,?,?,?,?,?,?)`,[cs_id,receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod])
         const purchase_id = result.insertId
         
         if (Array.isArray(items)) {

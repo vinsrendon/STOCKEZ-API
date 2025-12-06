@@ -67,6 +67,9 @@ router.get('/getbatch/:bid' ,verifyToken, async (req,res) => {
 
     try {
         const batch = await getBatch(bid)
+        if (!batch || batch.length === 0) {
+            return res.status(404).json({message: "NO BATCH FOUND FOR THIS ITEM"})
+        }
         return res.status(200).json(batch)
     } catch (err) {
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
@@ -83,6 +86,9 @@ router.get('/getitem/:barcode',verifyToken, async (req,res) =>{
 
     try {
         const item = await getItem(barcode)
+        if (!item || item.length === 0) {
+            return res.status(404).json({message: "NO BATCH FOUND FOR THIS ITEM"})
+        }
         return res.status(200).json(item)
     } catch (err) {
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
@@ -157,7 +163,7 @@ router.delete('/dltcategory',verifyToken, async (req,res) =>{
     try {
         const row = await dltCategory(category_id)
 
-        if (row === 0) {
+        if (!row || row === 0) {
             return res.status(404).json({ message: "CATEGORY NOT FOUND" });
         }
 
