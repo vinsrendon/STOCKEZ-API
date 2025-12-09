@@ -5,8 +5,28 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-const  { addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth, lowStockAlert, getCategories, addCategory, dltCategory} = require('../database.js')
+const  { getStockMovement, addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth, lowStockAlert, getCategories, addCategory, dltCategory} = require('../database.js')
 const { verifyToken } = require("./verify.js")
+
+router.get('/stockMovement',verifyToken, async (req,res) =>{
+    const {pid} = req.query       
+
+    if (!pid) {
+        return res.status(422).json({ message: "Fill all necessary fields." })     
+    }
+      
+    try {
+        const items = await getStockMovement(pid)     
+        if (!items || items.length === 0) {
+            return res.status(203).json({
+                message: "NO STOCK MOVEMENT FOUND"
+            });
+        }
+        return res.status(200).json(items);
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
 
 router.post("/addproduct" ,verifyToken, async (req,res) => {
     const {barcode,description,category} = req.body
@@ -47,7 +67,7 @@ router.post('/addbatch' ,verifyToken, async (req,res) => {
         const bid = await addBatch(pid,dDate,mDate,eDate,qty,uom,bp,sp)
         
         try {
-            await stock_history(uid,pid,bid)
+            await stock_history(uid,pid,bid,qty)
         } catch (error) {            
             return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:error})
         }
@@ -108,6 +128,7 @@ router.get('/mostsoldtoday',verifyToken, async (req,res) =>{
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
 })
+
 router.get('/mostsoldmonth',verifyToken, async (req,res) =>{
     try {
         const items = await mostSoldMonth()

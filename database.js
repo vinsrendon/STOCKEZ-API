@@ -133,10 +133,56 @@ export async function getItem(barcode){
     return item
 }
 
-export async function stock_history(uid,pid,bid){
+export async function stock_history(uid,pid,bid,qty){
     try {
-        await pool.execute(`INSERT INTO stock_history(stocked_by,product_id,batch_id) VALUES(?,?,?)`,[uid,pid,bid])
+        await pool.execute(`INSERT INTO stock_history(stocked_by,product_id,batch_id,qty) VALUES(?,?,?,?)`,[uid,pid,bid,qty])
     } catch (error) {
+        throw error
+    }
+}
+
+export async function getStockMovement(product_id ){
+    try {
+        const [rows] = await pool.execute(`
+            (
+                SELECT 
+                    sh.log_id AS ref_id,
+                    sh.product_id,
+                    sh.batch_id,
+                    sh.qty,
+                    sh.stock_date AS timestamp,
+                    DATE_FORMAT(sh.stock_date, '%Y-%m-%d %h:%i %p') AS readable_timestamp,
+                    'IN' AS remark
+                FROM stock_history sh
+                WHERE sh.product_id = ?
+            )
+
+            UNION ALL
+
+            (
+                SELECT 
+                    phi.purchase_id AS ref_id,
+                    b.product_id,
+                    phi.batch_id,
+                    phi.qty,
+                    ph.purchase_date AS timestamp,
+                    DATE_FORMAT(ph.purchase_date, '%Y-%m-%d %h:%i %p') AS readable_timestamp,
+                    'OUT' AS remark
+                FROM purchase_history_items phi
+                JOIN purchase_history ph 
+                    ON ph.purchase_id = phi.purchase_id
+                JOIN product_batches b 
+                    ON b.batch_id = phi.batch_id
+                WHERE b.product_id = ?
+            )
+
+            ORDER BY timestamp DESC
+            `,
+            [product_id, product_id])
+            return rows;
+    } catch (error) {
+        console.log(error);
+        
         throw error
     }
 }
