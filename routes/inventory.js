@@ -53,7 +53,7 @@ router.get('/getproducts' ,verifyToken, async (req,res) => {
 })
 
 router.post('/addbatch' ,verifyToken, async (req,res) => {
-    const {pid,dDate,mDate,eDate,qty,uom,bp,sp} = req.body
+    const {pid,dDate,eDate,qty,uom,bp,sp} = req.body
     const token = req.cookies.token;
     try {
         let decoded
@@ -64,7 +64,7 @@ router.post('/addbatch' ,verifyToken, async (req,res) => {
         }
         const uid = decoded.id
 
-        const bid = await addBatch(pid,dDate,mDate,eDate,qty,uom,bp,sp)
+        const bid = await addBatch(pid,dDate,eDate,qty,uom,bp,sp)
         
         try {
             await stock_history(uid,pid,bid,qty)
@@ -163,12 +163,12 @@ router.get('/getcategories',verifyToken, async (req,res) =>{
     }
 })
 router.post('/addcategory',verifyToken, async (req,res) =>{
-    const {category_name} = req.body
+    const {category_name, has_expiration } = req.body
     if(!category_name){
         return res.status(422).json({ message: "Fill all necessary fields." })
     }
     try {
-        await addCategory(category_name.toUpperCase())
+        await addCategory(category_name.toUpperCase(), has_expiration)
         return res.status(200).json({message: "CATEGORY ADDED SUCCESSFULLY"})
     } catch (err) {
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})

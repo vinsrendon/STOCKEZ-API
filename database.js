@@ -93,15 +93,15 @@ export async function addProduct(barcode,description,category){
 }
 
 export async function getProducts(){
-    const [products] = await pool.execute(`SELECT p.barcode,p.description,p.product_id,c.category_name FROM products p JOIN category c ON p.category = c.category_id`)
+    const [products] = await pool.execute(`SELECT p.barcode,p.description,p.product_id,c.category_name,c.category_id FROM products p JOIN category c ON p.category = c.category_id`)
     return products
 }
 
-export async function addBatch(pid,dDate,mDate,eDate,qty,uom,bp,sp){
+export async function addBatch(pid,dDate,eDate,qty,uom,bp,sp){
     try {
         const [result] = await pool.execute(`INSERT INTO 
-        product_batches(product_id,delivery_date,manufacturing_date,expiration_date,quantity,UOM,buy_price,sell_price)
-        VALUES(?,?,?,?,?,?,?,?)`,[pid,dDate,mDate,eDate,qty,uom,bp,sp])
+        product_batches(product_id,delivery_date,expiration_date,quantity,UOM,buy_price,sell_price)
+        VALUES(?,?,?,?,?,?,?)`,[pid,dDate,eDate,qty,uom,bp,sp])
         return result.insertId
     } catch (error) {
         throw error
@@ -111,7 +111,6 @@ export async function addBatch(pid,dDate,mDate,eDate,qty,uom,bp,sp){
 export async function getBatch(bid){
     const [batch] = await pool.execute(`SELECT * ,
     DATE_FORMAT(delivery_date, '%Y-%m-%d') AS delivery_date,
-    DATE_FORMAT(manufacturing_date, '%Y-%m-%d') AS manufacturing_date,
     DATE_FORMAT(expiration_date, '%Y-%m-%d') AS expiration_date
     FROM product_batches 
     WHERE product_id =?`,[bid])
@@ -262,9 +261,9 @@ export async function getCategories(){
     }
 }
 
-export async function addCategory(category_name){    
+export async function addCategory(category_name,has_expiration){    
     try {
-        await pool.execute(`INSERT INTO category(category_name) VALUES(?)`,[category_name])
+        await pool.execute(`INSERT INTO category(category_name,has_expiration) VALUES(?,?)`,[category_name,has_expiration])
     } catch (error) {
         throw error
     }
