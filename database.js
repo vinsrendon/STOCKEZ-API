@@ -268,6 +268,7 @@ export async function addCategory(category_name,has_expiration){
         throw error
     }
 }
+
 export async function dltCategory(category_id){    
     try {
         const [result] = await pool.execute(`DELETE FROM category WHERE category.category_id = ?`,[category_id])
@@ -276,6 +277,34 @@ export async function dltCategory(category_id){
         throw error
     }
 }
+
+export async function getUOM(){    
+    try {
+        const [result] = await pool.execute(`SELECT * FROM uom`)
+        return result
+    } catch (error) {
+        throw error
+    }
+}
+
+export async function addUOM(uom_name){    
+    try {
+        await pool.execute(`INSERT INTO uom(uom_name) VALUES(?)`,[uom_name])
+    } catch (error) {
+        throw error
+    }
+}
+
+export async function dltUOM(uom_id){    
+    try {
+        const [result] = await pool.execute(`DELETE FROM uom WHERE uom.uom_id = ?`,[uom_id])
+        return result.affectedRows
+    } catch (error) {
+        throw error
+    }
+}
+
+
 
 
 // CASHIER

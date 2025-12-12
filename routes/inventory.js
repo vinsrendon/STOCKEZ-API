@@ -5,7 +5,7 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-const  { getStockMovement, addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth, lowStockAlert, getCategories, addCategory, dltCategory} = require('../database.js')
+const  { getStockMovement, addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth, lowStockAlert, getCategories, addCategory, dltCategory, getUOM, addUOM, dltUOM} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
 router.get('/stockMovement',verifyToken, async (req,res) =>{
@@ -176,7 +176,6 @@ router.post('/addcategory',verifyToken, async (req,res) =>{
 })
 router.delete('/dltcategory',verifyToken, async (req,res) =>{
     const {category_id} = req.query
-    console.log(category_id);
     
     if(!category_id){
         return res.status(422).json({ message: "Fill all necessary fields." })
@@ -185,10 +184,51 @@ router.delete('/dltcategory',verifyToken, async (req,res) =>{
         const row = await dltCategory(category_id)
 
         if (!row || row === 0) {
-            return res.status(404).json({ message: "CATEGORY NOT FOUND" });
+            return res.status(404).json({ message: "CATEGORY NOT FOUND" })
         }
 
         return res.status(200).json({message: "CATEGORY DELETED SUCCESSFULLY"})
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
+router.get('/getuom',verifyToken, async (req,res) =>{
+    try {
+        const uom = await getUOM()
+        if (!uom || uom.length === 0) {
+            return res.status(404).json({message: "NO UOM FOUND"})
+        }
+        return res.status(200).json(uom)
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
+router.post('/adduom',verifyToken, async (req,res) =>{
+    const {uom_name} = req.body
+    if(!uom_name){
+        return res.status(422).json({ message: "Fill all necessary fields." })
+    }
+    try {
+        await addUOM(uom_name.toUpperCase())
+        return res.status(200).json({message: "UOM ADDED SUCCESSFULLY"})
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
+router.delete('/dltuom',verifyToken, async (req,res) =>{
+    const {uom_id} = req.query
+    
+    if(!uom_id){
+        return res.status(422).json({ message: "Fill all necessary fields." })
+    }
+    try {
+        const row = await dltUOM(uom_id)
+
+        if (!row || row === 0) {
+            return res.status(404).json({ message: "UOM NOT FOUND" })
+        }
+
+        return res.status(200).json({message: "UOM DELETED SUCCESSFULLY"})
     } catch (err) {
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
