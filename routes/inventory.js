@@ -29,14 +29,14 @@ router.get('/stockMovement',verifyToken, async (req,res) =>{
 })
 
 router.post("/addproduct" ,verifyToken, async (req,res) => {
-    const {barcode,description,category} = req.body
-
+    const {barcode,description,category,uom} = req.body
+    
     if (!barcode || !description || !category) {
         return res.status(422).json({ message: "Fill all necessary fields." })        
     }       
 
     try {
-        await addProduct(barcode,description.toUpperCase(),category)        
+        await addProduct(barcode,description.toUpperCase(),category,uom)
         res.status(200).json({message: "PRODUCT ADDED SUCCESSFULLY"})
     } catch (err) {
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
@@ -46,6 +46,9 @@ router.post("/addproduct" ,verifyToken, async (req,res) => {
 router.get('/getproducts' ,verifyToken, async (req,res) => {    
     try {
         const products = await getProducts()
+        if (!products || products.length === 0) {
+            return res.status(404).json({message: "NO PRODUCTS FOUND"})
+        }
         return res.status(200).json(products)
     } catch (err) {
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
@@ -53,28 +56,27 @@ router.get('/getproducts' ,verifyToken, async (req,res) => {
 })
 
 router.post('/addbatch' ,verifyToken, async (req,res) => {
-    const {pid,dDate,eDate,qty,uom,bp,sp} = req.body
-    const token = req.cookies.token;
-    try {
-        let decoded
-        try {
-             decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)                  
-        } catch (error) {
-            return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:error})
-        }
+    const {pid,dDate,eDate,qty,bp,sp} = req.body
+
+    const token = req.cookies.token
+
+    if (!pid || !dDate || !qty || !bp || !sp) {
+        return res.status(422).json({ message: "Fill all necessary fields." })        
+    } 
+    else if (qty <= 0 || bp <= 0 || sp <= 0) {
+        return res.status(422).json({ message: "Invalid numeric values." })
+    }
+
+    
+    try {      
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)    
         const uid = decoded.id
 
-        const bid = await addBatch(pid,dDate,eDate,qty,uom,bp,sp)
-        
-        try {
-            await stock_history(uid,pid,bid,qty)
-        } catch (error) {            
-            return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:error})
-        }
+        await addBatch(pid,dDate,eDate,qty,bp,sp,uid)
 
         return res.status(200).json({message: "BATCH ADDED SUCCESSFULLY"})
     } catch (err) {
-        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+        return res.status(500).json({message: "CANNOT ADDED BATCH", error:err})
     }    
 })
 

@@ -88,23 +88,34 @@ export async function addExpense(biller,expense_desc,expense_amount,expense_date
 }
 
 //INVENTORY
-export async function addProduct(barcode,description,category){
-    await pool.execute(`INSERT INTO products(barcode,description,category) VALUES(?,?,?)`,[barcode,description,category])
+export async function addProduct(barcode,description,category,uom){
+    await pool.execute(`INSERT INTO products(barcode,description,category_id,uom_id) VALUES(?,?,?,?)`,[barcode,description,category,uom])
 }
 
 export async function getProducts(){
-    const [products] = await pool.execute(`SELECT p.barcode,p.description,p.product_id,c.category_name,c.category_id FROM products p JOIN category c ON p.category = c.category_id`)
+    const [products] = await pool.execute(`SELECT p.barcode,p.description,p.product_id,c.category_name,c.category_id,o.uom_name,o.uom_id FROM products p JOIN category c ON p.category_id = c.category_id JOIN uom o ON p.uom_id = o.uom_id`)
     return products
 }
 
-export async function addBatch(pid,dDate,eDate,qty,uom,bp,sp){
+export async function addBatch(pid,dDate,eDate,qty,bp,sp,uid){
+    const conn = await pool.getConnection()
     try {
-        const [result] = await pool.execute(`INSERT INTO 
-        product_batches(product_id,delivery_date,expiration_date,quantity,UOM,buy_price,sell_price)
-        VALUES(?,?,?,?,?,?,?)`,[pid,dDate,eDate,qty,uom,bp,sp])
-        return result.insertId
+        await conn.beginTransaction()
+
+        const [result] = await conn.execute(`INSERT INTO 
+        product_batches(product_id,delivery_date,expiration_date,quantity,buy_price,sell_price)
+        VALUES(?,?,?,?,?,?)`,[pid,dDate,eDate,qty,bp,sp])
+
+        const bid = result.insertId
+
+        await conn.execute(`INSERT INTO stock_history(stocked_by,product_id,batch_id,qty) VALUES(?,?,?,?)`,[uid,pid,bid,qty])
+        
+        await conn.commit()
     } catch (error) {
+        await conn.rollback()
         throw error
+    } finally{
+        conn.release()
     }
 }
 
@@ -119,10 +130,11 @@ export async function getBatch(bid){
 
 export async function getItem(barcode){
     const [item] = await pool.execute(`SELECT 
-    p.product_id,pb.batch_id,barcode,description,pb.quantity,UOM,sell_price 
+    p.product_id,pb.batch_id,barcode,description,pb.quantity,u.uom_name,sell_price 
     FROM products p 
     JOIN product_batches pb 
     ON pb.product_id=p.product_id 
+    JOIN uom u ON p.uom_id = u.uom_id
     WHERE p.barcode = ?
     AND pb.quantity > 0
     ORDER BY 
@@ -130,14 +142,6 @@ export async function getItem(barcode){
     pb.batch_id ASC
     LIMIT 1`,[barcode])
     return item
-}
-
-export async function stock_history(uid,pid,bid,qty){
-    try {
-        await pool.execute(`INSERT INTO stock_history(stocked_by,product_id,batch_id,qty) VALUES(?,?,?,?)`,[uid,pid,bid,qty])
-    } catch (error) {
-        throw error
-    }
 }
 
 export async function getStockMovement(product_id ){
@@ -237,7 +241,6 @@ export async function lowStockAlert(){
         p.product_id,
         p.barcode,
         p.description,
-        MIN(pb.UOM) AS UOM,           -- or MAX(pb.UOM)
         MIN(pb.batch_id) AS batch_id, -- optional, usually not meaningful
         MIN(pb.quantity) AS quantity, -- last seen quantity, probably not useful
         SUM(pb.quantity) AS totalQty
@@ -310,7 +313,7 @@ export async function dltUOM(uom_id){
 // CASHIER
 export async function getCashierProducts(){
     const [products] = await pool.execute(`SELECT *, SUM(b.quantity) AS totalQty 
-    FROM products p INNER JOIN product_batches b ON p.product_id = b.product_id GROUP BY p.product_id`)
+    FROM products p JOIN product_batches b ON p.product_id = b.product_id JOIN uom u ON p.uom_id = u.uom_id GROUP BY p.product_id`)
     return products
 }
 
@@ -423,7 +426,7 @@ export async function getSalesHistory(hId){
     if (headerRows.length === 0) return null
 
     const [items] = await pool.execute(`
-        SELECT p.barcode,p.description,pb.UOM,phi.qty,pb.sell_price from purchase_history_items phi 
+        SELECT p.barcode,p.description,phi.qty,pb.sell_price from purchase_history_items phi 
         JOIN product_batches pb ON phi.batch_id = pb.batch_id 
         JOIN products p ON pb.product_id = p.product_id
         where phi.purchase_id = ?
