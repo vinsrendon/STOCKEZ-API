@@ -7,11 +7,11 @@ function verifyToken(req,res,next){
     const token = req.cookies.token;
 
     if (!token){   
-        return res.status(401).json({ message: "Unauthorized" });            
+        return res.status(403).json({ message: "Unauthorized" })          
     } 
 
     try {
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
         return next()              
     } 
     catch (err) {

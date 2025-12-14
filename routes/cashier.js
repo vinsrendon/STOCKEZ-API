@@ -7,7 +7,7 @@ const paymongo = require('@api/paymongo')
 
 dotenv.config()
 
-const  { startCashierSession, endCashierSession, getLastReceiptNumber, getSalesHistory,getSalesHistories, getCashierProducts, savePurchase} = require('../database.js')
+const  { startCashierSession, endCashierSession, getLastReceiptNumber, getSalesHistory,getSalesHistories, getCashierProducts, savePurchase, getCashiesSessionSummary, getCashiesSessionInfo} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
 router.post('/savepurchasehistory' ,verifyToken, async (req,res) => {
@@ -119,10 +119,22 @@ router.post('/endCashierSession' ,verifyToken, async (req,res) => {
 })
 
 router.get('/getSalesHistories', verifyToken, async (req, res) => {
+    const token = req.cookies.token
     try {
         const {from = null,to = null,page = 1,limit = 10,search = ""} = req.query
-
-        const history = await getSalesHistories({from,to,page: Number(page),limit: Number(limit),search})
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+        let cashierId = null
+        if(decoded.role){
+            cashierId = decoded.id
+        }
+        else if(!decoded.role){
+            cashierId = null
+        }
+        else{
+            return res.status(401).json({ message: "Unauthorized" })
+        }
+        
+        const history = await getSalesHistories({from,to,page: Number(page),limit: Number(limit),search,cashierId})
 
         return res.status(200).json(history)
     } 
@@ -150,6 +162,32 @@ router.get('/getcashierproducts' ,verifyToken, async (req,res) => {
         const products = await getCashierProducts()
 
         return res.status(200).json(products)
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }    
+})
+
+router.get('/cashiersessionsummary' ,verifyToken, async (req,res) => {    
+    const cs_id = req.cookies.cashierSessionId    
+    try {
+        const result = await getCashiesSessionSummary(cs_id)
+        if (!result || result.length === 0) {
+            return res.status(404).json({message: "NO SUMMARY FOUND"})
+        }
+        return res.status(200).json(result)
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }    
+})
+
+router.get('/cashiersessioninfo' ,verifyToken, async (req,res) => {    
+    const cs_id = req.cookies.cashierSessionId    
+    try {
+        const result = await getCashiesSessionInfo(cs_id)
+        if (!result || result.length === 0) {
+            return res.status(404).json({message: "NO SESSION FOUND"})
+        }
+        return res.status(200).json(result)
     } catch (err) {
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }    

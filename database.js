@@ -324,7 +324,7 @@ export async function savePurchase(cs_id,receiptNumber,cashier,purchase_total,am
         await conn.beginTransaction()
 
         const [result] = await conn.execute(`INSERT INTO 
-        purchase_history(cs_id,receipt_number,cashier,purchase_total,amount_tendered,amount_change,payment_method) 
+        purchase_history(cs_id,receipt_number,cashier_id,purchase_total,amount_tendered,amount_change,payment_method) 
         VALUES(?,?,?,?,?,?,?)`,[cs_id,receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod])
         const purchase_id = result.insertId
         
@@ -372,7 +372,7 @@ export async function getLastReceiptNumber(prefix){
     return rows
 }
 
-export async function getSalesHistories({ from, to, page, limit, search }) {
+export async function getSalesHistories({ from, to, page, limit, search ,cashierId}) {
     const offset = (page - 1) * limit
 
     let where = "WHERE 1=1"
@@ -384,13 +384,16 @@ export async function getSalesHistories({ from, to, page, limit, search }) {
         params.push(`%${search}%`)
     }
 
+    if (cashierId) {
+        where += " AND cashier_id = ?"
+        params.push(cashierId)
+    }
 
     if (from && to) {
         where += " AND DATE(purchase_date) BETWEEN ? AND ?"
         params.push(from, to)
     }
-
-
+    
     const [countRows] = await pool.execute(
         `SELECT COUNT(*) AS total FROM purchase_history ${where}`,params)
 
@@ -419,7 +422,7 @@ export async function getSalesHistory(hId){
         si.firstname,si.lastname, 
         DATE_FORMAT(p.purchase_date, '%Y-%m-%d %h:%i:%s %p') AS formatted_purchase_date
         FROM purchase_history p
-        JOIN users_info si ON p.cashier = si.uid
+        JOIN users_info si ON p.cashier_id = si.uid
         WHERE p.purchase_id = ?
     `, [hId])
 
@@ -434,6 +437,16 @@ export async function getSalesHistory(hId){
 
     return [ headerRows, items ]
 
+}
+
+export async function getCashiesSessionSummary(cs_id) {
+    const [result] = await pool.execute(`SELECT * FROM purchase_history p WHERE cs_id = ? `,[cs_id])
+    return result
+}
+
+export async function getCashiesSessionInfo(cs_id) {
+    const [result] = await pool.execute(`SELECT * FROM cashier_sessions p WHERE id = ? LIMIT 1`,[cs_id])
+    return result
 }
 
 //CASHFLOW
