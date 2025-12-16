@@ -5,7 +5,7 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-const  { getStockMovement, addProduct, getProducts, addBatch, getBatch, getItem, stock_history, mostSoldToday, mostSoldMonth, lowStockAlert, getCategories, addCategory, dltCategory, getUOM, addUOM, dltUOM} = require('../database.js')
+const  { getStockMovement, addProduct, getProducts, addBatch, getBatch, getItem, mostSoldToday, mostSoldMonth, lowStockAlert, getCategories, addCategory, dltCategory, getUOM, addUOM, dltUOM, itemsSold} = require('../database.js')
 const { verifyToken } = require("./verify.js")
 
 router.get('/stockMovement',verifyToken, async (req,res) =>{
@@ -231,6 +231,17 @@ router.delete('/dltuom',verifyToken, async (req,res) =>{
         }
 
         return res.status(200).json({message: "UOM DELETED SUCCESSFULLY"})
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
+router.get('/itemssold',verifyToken, async (req,res) =>{
+    try {
+        const items = await itemsSold()
+        if (!items || items.length === 0) {
+            return res.status(404).json({message: "NO ITEMS FOUND"})
+        }
+        return res.status(200).json(items)
     } catch (err) {
         return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }

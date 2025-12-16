@@ -307,8 +307,34 @@ export async function dltUOM(uom_id){
     }
 }
 
+export async function itemsSold() {    
+    try {
+        const [result] = await pool.execute(`SELECT 
+            MONTHNAME(p.purchase_date) AS month,
+            SUM(hi.qty) AS total_sold
+            FROM purchase_history_items hi
+            JOIN purchase_history p ON hi.purchase_id = p.purchase_id
+            GROUP BY MONTH(p.purchase_date)
+            ORDER BY MONTH(p.purchase_date)`)
+            return result
+    } catch (error) {
+        throw error
+    }
+}
 
-
+export async function expenses() {    
+    try {
+        const [result] = await pool.execute(`SELECT 
+            MONTHNAME(e.expense_date) AS month,
+            SUM(e.expense_amount) AS total_amount
+            FROM expenses e
+            GROUP BY MONTH(e.expense_date)
+            ORDER BY MONTH(e.expense_date)`)
+            return result
+    } catch (error) {
+        throw error
+    }
+}
 
 // CASHIER
 export async function getCashierProducts(){
