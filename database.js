@@ -343,15 +343,18 @@ export async function getCashierProducts(){
     return products
 }
 
-export async function savePurchase(cs_id,receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod,items){
+export async function savePurchase(cs_id,receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod,items,pi){
     const conn = await pool.getConnection()
-
+    let payIntent = pi
+    if(!payIntent){
+        payIntent=""
+    }
     try {
         await conn.beginTransaction()
 
         const [result] = await conn.execute(`INSERT INTO 
-        purchase_history(cs_id,receipt_number,cashier_id,purchase_total,amount_tendered,amount_change,payment_method) 
-        VALUES(?,?,?,?,?,?,?)`,[cs_id,receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod])
+        purchase_history(cs_id,receipt_number,cashier_id,purchase_total,amount_tendered,amount_change,payment_method,reference) 
+        VALUES(?,?,?,?,?,?,?,?)`,[cs_id,receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod,payIntent])
         const purchase_id = result.insertId
         
         if (Array.isArray(items)) {
@@ -444,7 +447,7 @@ export async function getSalesHistories({ from, to, page, limit, search ,cashier
 
 export async function getSalesHistory(hId){
     const [headerRows] = await pool.execute(`
-        SELECT p.receipt_number,p.purchase_Id,p.purchase_date,p.purchase_total,p.amount_tendered,p.amount_change,p.payment_method,
+        SELECT p.receipt_number,p.purchase_Id,p.purchase_date,p.purchase_total,p.amount_tendered,p.amount_change,p.payment_method,p.reference,
         si.firstname,si.lastname, 
         DATE_FORMAT(p.purchase_date, '%Y-%m-%d %h:%i:%s %p') AS formatted_purchase_date
         FROM purchase_history p

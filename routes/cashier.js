@@ -2,7 +2,6 @@ const express = require("express")
 const router = express.Router()
 const jwt = require("jsonwebtoken")
 const dotenv = require('dotenv')
-const paymongo = require('@api/paymongo')
 
 
 dotenv.config()
@@ -11,7 +10,7 @@ const  { startCashierSession, endCashierSession, getLastReceiptNumber, getSalesH
 const { verifyToken } = require("./verify.js")
 
 router.post('/savepurchasehistory' ,verifyToken, async (req,res) => {
-    const {purchase_total,amount_tendered,amount_change,items,paymentMethod} = req.body
+    const {purchase_total,amount_tendered,amount_change,items,paymentMethod,pi} = req.body
     
     const token = req.cookies.token
 
@@ -29,7 +28,7 @@ router.post('/savepurchasehistory' ,verifyToken, async (req,res) => {
 
         const receiptNumber = await generateReceiptNumber()            
 
-        await savePurchase(cashierSessionId,receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod,items)
+        await savePurchase(cashierSessionId,receiptNumber,cashier,purchase_total,amount_tendered,amount_change,paymentMethod,items,pi)
 
         return res.status(200).json({ message: "PURCHASE HISTORY SAVED" ,receiptNumber:receiptNumber})
     } catch (err) {
