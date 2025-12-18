@@ -310,11 +310,14 @@ export async function dltUOM(uom_id){
 export async function itemsSold() {    
     try {
         const [result] = await pool.execute(`SELECT
-            DATE_FORMAT(p.purchase_date, '%Y-%m') AS month,
-            SUM(hi.qty) AS total_sold
+            YEAR(p.purchase_date)        AS year,
+            MONTH(p.purchase_date)       AS month_index,
+            DATE_FORMAT(p.purchase_date, '%b') AS month_label,
+            SUM(hi.qty)                  AS total_sold
             FROM purchase_history_items hi
             JOIN purchase_history p
             ON hi.purchase_id = p.purchase_id
+            WHERE p.purchase_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
             GROUP BY
             YEAR(p.purchase_date),
             MONTH(p.purchase_date)
