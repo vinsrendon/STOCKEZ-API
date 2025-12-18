@@ -383,7 +383,7 @@ export async function savePurchase(cs_id,receiptNumber,cashier,purchase_total,am
                 SET quantity = quantity - ? WHERE batch_id = ? AND quantity >= ?`,[item.quantity, item.batch_id, item.quantity])
                 
                 if (result.affectedRows === 0) {
-                    console.log("here")
+                    // console.log("here")
                     
                     let err = new Error("Not enough stock in this batch")
                     err.code = "INSUFFICIENT_STOCK"

@@ -12,7 +12,7 @@ const { verifyToken } = require("./verify.js")
 
 router.get("/checkpistat", verifyToken, async (req, res) => {
     const { piid } = req.query
-    console.log("checkoutSessionsId:",piid);
+    // console.log("checkoutSessionsId:",piid);
     
     const auth = Buffer.from(PAYMONGO_KEY + ':').toString('base64')
     const options = {
@@ -27,7 +27,7 @@ router.get("/checkpistat", verifyToken, async (req, res) => {
     axios
     .request(options)
     .then((response) => {
-        console.log(response.data)
+        // console.log(response.data)
         return res.status(200).json(response.data);
     })
     .catch(err => console.log(err));

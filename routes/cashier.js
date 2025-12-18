@@ -145,7 +145,8 @@ router.get('/getSalesHistories', verifyToken, async (req, res) => {
 
 router.get('/getSalesHistory' ,verifyToken, async (req,res) => {
     const { hId } = req.query
-
+    // console.log(hId);
+    
     try {
         const history = await getSalesHistory(hId)
 

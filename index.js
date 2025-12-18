@@ -13,7 +13,7 @@ const app = express()
 app.use(
   cors({
     origin: function (origin, callback) {
-      console.log(origin);
+      // console.log(origin);
       
       if (!origin || origin.match(/^http?:\/\/.*:5173$/) || origin.match(/^http?:\/\/.*:4173$/)) {
         callback(null, true);
