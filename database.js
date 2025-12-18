@@ -101,7 +101,7 @@ export async function addBatch(pid,dDate,eDate,qty,bp,sp,uid){
     const conn = await pool.getConnection()
     try {
         await conn.beginTransaction()
-
+        if(!eDate) eDate=""
         const [result] = await conn.execute(`INSERT INTO 
         product_batches(product_id,delivery_date,expiration_date,quantity,buy_price,sell_price)
         VALUES(?,?,?,?,?,?)`,[pid,dDate,eDate,qty,bp,sp])
