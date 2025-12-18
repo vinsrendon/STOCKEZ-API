@@ -537,3 +537,13 @@ export async function getCashflowExpenses(from,to){
     )
     return expenses 
 }
+
+//MAINTENANCE
+export async function scheduleBackup(time,enabled){
+    await pool.execute("INSERT INTO scheduled_backup (time,enabled) VALUES (?,?)", [time,enabled])
+}
+export async function getScheduleBackup(){
+    const [rows] = await pool.execute("SELECT * FROM scheduled_backup ORDER BY id DESC LIMIT 1")
+    return rows
+}
+

@@ -8,34 +8,43 @@ const {verifyToken} = require('./verify.js')
 const mysql = require('mysql2/promise')
 const dotenv = require('dotenv')
 const mysqldump = require('mysqldump')
+const cron = require('node-cron')
+
 
 dotenv.config()
 
-router.get("/backup" ,verifyToken, async (req,res) => {  
-  if (!fs.existsSync(BACKUP_DIR)) {
-    fs.mkdirSync(BACKUP_DIR)
+const  { scheduleBackup, getScheduleBackup} = require('../database.js')
+
+let backupJob = null
+
+function stopBackup() {
+  if (backupJob) {
+    backupJob.stop();
+    backupJob = null;
+    console.log("Backup scheduler stopped");
   }
+}
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const backupFile = path.join(BACKUP_DIR, `${process.env.MYSQL_DATABASE}-${timestamp}.sql`)
+function startBackup(time) {
+  stopBackup();
 
+  const [hour, minute] = time.split(":");
+  const cronTime = `${minute} ${hour} * * *`;
+
+  backupJob = cron.schedule(cronTime, async () => {
+    console.log("Running scheduled backup...");
+    await runBackup();
+  });
+
+  console.log("Backup scheduled at", time);
+}
+
+router.post("/backup" ,verifyToken, async (req,res) => {  
   try {
-    mysqldump({
-      connection: {
-        host: process.env.MYSQL_HOST,
-        user: process.env.MYSQL_USER,
-        password: process.env.MYSQL_PASSWORD,
-        database: process.env.MYSQL_DATABASE
-      },
-      dump: {
-        addDropTable: true
-      },
-      dumpToFile: backupFile,
-    });
-    console.log('Dump completed');
-    return res.status(200).json({ message: 'Backup created successfully', file: backupFile });
+    const backupFile = await runBackup()
+    return res.status(200).json({ message: 'Backup created successfully', file: backupFile })
   } catch (error) {
-    return res.status(500).json({ message: 'Backup failed', error: stderr || error.message});
+    return res.status(500).json({ message: 'Backup failed', error: stderr || error.message})
   }
 })
 
@@ -100,7 +109,7 @@ router.post("/restore",verifyToken, async (req, res) => {
     }
     return res.status(500).json({ message: "Restore failed, changes rolled back", error: error.message });
   }
-});
+})
 
 router.get("/backups",verifyToken, (req, res) => {
   try {
@@ -130,7 +139,7 @@ router.get("/backups",verifyToken, (req, res) => {
     console.error("Error listing backups:", err);
     return res.status(500).json({ message: "Failed to list backups", error: err.message });
   }
-});
+})
 
 router.delete("/backups/:filename",verifyToken, (req, res) => {
   try {
@@ -152,6 +161,88 @@ router.delete("/backups/:filename",verifyToken, (req, res) => {
   } catch (err) {
     return res.status(500).json({ message: "Failed to delete backup", error: err.message });
   }
-});
+})
+
+let scheduledBackupTime = "01:00"
+
+router.post("/set-backup-time", verifyToken, async (req, res) => {
+  const { time, enabled } = req.body
+  if (!time || !/^\d{2}:\d{2}$/.test(time)) {
+    return res.status(400).json({ message: "Invalid time format" })
+  }
+  const isEnabled = enabled ? 1 : 0
+  try {
+    await scheduleBackup(time,isEnabled)    
+
+    scheduledBackupTime = time
+
+    await loadBackupSchedule()
+
+    return res.status(200).json({ message: "Backup time updated", time })
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Failed to set backup time" });
+  }
+})
+
+router.get("/get-backup-time", verifyToken, async (req, res) => {
+  try {
+    const status = await getScheduleBackup()    
+    scheduledBackupTime = status[0].time
+    return res.status(200).json(status)
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Failed to get status" });
+  }
+})
+
+async function runBackup(){
+  if (!fs.existsSync(BACKUP_DIR)) {
+    fs.mkdirSync(BACKUP_DIR)
+  }
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const backupFile = path.join(BACKUP_DIR, `${process.env.MYSQL_DATABASE}-${timestamp}.sql`)
+
+  try {
+    mysqldump({
+      connection: {
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE
+      },
+      dump: {
+        addDropTable: true
+      },
+      dumpToFile: backupFile,
+    });
+    console.log('BACKUP CREATED')
+    return backupFile
+  } catch (error) {
+    console.log('BACKUP FAILED',error)    
+    throw error
+  }
+}
+
+async function loadBackupSchedule() {
+  try {
+    const rows = await getScheduleBackup()
+
+    if (!rows.length) return
+
+    const { time, enabled } = rows[0];
+    // console.log(time,enabled);
+
+    if (enabled) startBackup(time)
+
+    else stopBackup()
+
+  } catch (err) {
+    console.log("Failed to load backup schedule:", err.message)
+  }
+}
+
+loadBackupSchedule()
 
 module.exports = router

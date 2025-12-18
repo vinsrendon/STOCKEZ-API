@@ -21,6 +21,7 @@
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.16.0",
     "mysqldump": "^3.2.0",
+    "node-cron": "^4.2.1",
     "nodemon": "^3.1.11",
     "pdfkit": "^0.17.2",
     "socket.io": "^4.8.1"
