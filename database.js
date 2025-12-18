@@ -455,7 +455,7 @@ export async function getSalesHistories({ from, to, page, limit, search ,cashier
             FROM purchase_history
             ORDER BY purchase_date DESC
             LIMIT ? OFFSET ?`,
-            [...params, limit, offset]
+            [limit, offset]
         )
         return { data: rows, total, page, limit }
     }
