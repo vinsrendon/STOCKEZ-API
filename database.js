@@ -354,8 +354,8 @@ export async function expenses() {
 
 // CASHIER
 export async function getCashierProducts(){
-    const [products] = await pool.execute(`SELECT *, SUM(b.quantity) AS totalQty 
-    FROM products p JOIN product_batches b ON p.product_id = b.product_id JOIN uom u ON p.uom_id = u.uom_id GROUP BY p.product_id`)
+    const [products] = await pool.execute(`SELECT p.product_id,p.barcode,p.description,b.sell_price,u.uom_name, SUM(b.quantity) AS totalQty 
+    FROM products p JOIN product_batches b ON p.product_id = b.product_id JOIN uom u ON p.uom_id = u.uom_id GROUP BY p.product_id,p.barcode,p.description,b.sell_price,u.uom_name`)
     return products
 }
 
