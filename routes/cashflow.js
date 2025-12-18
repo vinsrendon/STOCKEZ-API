@@ -18,6 +18,18 @@ router.get("/getitemssold" ,verifyToken, async (req,res) => {
         res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
     }
 })
+router.get("/getcashflowexpense" ,verifyToken, async (req,res) => {  
+    const { from, to } = req.query;  
+    try {
+        const expense = await getCashflowExpenses(from,to)
+        if (!expense || expense === 0) {
+            return res.status(404).json({ message: "EXPENSE ITEMS NOT FOUND" })
+        }
+        return res.status(200).json(expense);
+    } catch (err) {
+        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
 
 router.get("/cashflow/pdf" ,verifyToken, async (req,res) => { 
     try {
