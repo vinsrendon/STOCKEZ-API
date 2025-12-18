@@ -474,7 +474,7 @@ export async function getSalesHistories({
 
   const offset = (page - 1) * limit
 
-  let where = "WHERE 1=1"
+  let where = "WHERE true"
   const params = []
 
   if (search) {
