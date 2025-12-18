@@ -6,7 +6,18 @@ const fs = require('fs')
 
 const  { getItemsSold, getCashflowSales, getCashflowExpenses} = require('../database.js')
 
-
+router.get("/getitemssold" ,verifyToken, async (req,res) => {  
+    const { from, to } = req.query;  
+    try {
+        const items = await getItemsSold(from,to)
+        if (!items || items === 0) {
+            return res.status(404).json({ message: "SOLD ITEMS NOT FOUND" })
+        }
+        return res.status(200).json(items);
+    } catch (err) {
+        res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
 
 router.get("/cashflow/pdf" ,verifyToken, async (req,res) => { 
     try {
@@ -38,15 +49,7 @@ router.get("/cashflow/pdf" ,verifyToken, async (req,res) => {
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", `attachment; filename=cashflow_${from}_to_${to}.pdf`);
         doc.pipe(res);
-doc.text(
-  "NOTE: This document is system-generated.",
-  doc.page.margins.left,
-  20,
-  {
-    align: "center",
-    width: doc.page.width - doc.page.margins.left - doc.page.margins.right
-  }
-);
+
         doc.fontSize(20).text("Cash Flow Statement", { align: "center" });
         doc.fontSize(12).text(`From: ${from}  To: ${to}`, { align: "center" });
         doc.moveDown();
@@ -129,7 +132,7 @@ doc.text(
         // Totals
         doc.fontSize(14).text(`Total Sales: Php.${totalSales.toFixed(2)}`);
         doc.text(`Total Expenses: Php. ${totalExpense.toFixed(2)}`);
-        doc.text(`Net Cash Flow: Php. ${netCashFlow.toFixed(2)}`, { underline: true });
+        doc.text(`Cash Flow: Php. ${netCashFlow.toFixed(2)}`, { underline: true });
 
         doc.end();
   } catch (err) {
