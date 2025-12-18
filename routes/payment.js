@@ -147,10 +147,12 @@ function handleCheckoutPaid(data,io) {
     const paymentIntent = data.attributes.data.attributes.payment_intent.id
     const methodUsed = data.attributes.data.attributes.payment_method_used
     const paidAmount = data.attributes.data.attributes.payments[0].attributes.amount
+    const payReference = data.attributes.data.attributes.payments[0].id
 
     // console.log('✅ Checkout paid:', paymentIntent , " METHOD USED:", methodUsed)
     io.to(paymentIntent).emit('payment-success', {
         paymentIntent,
+        payReference,
         methodUsed,
         paidAmount,
         status: 'PAID'

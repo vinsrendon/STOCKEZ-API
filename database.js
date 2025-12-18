@@ -515,3 +515,25 @@ export async function getCashiesSessionInfo(cs_id) {
 export async function getCashflowRows(from,to) {
   
 }
+
+export async function getCashflowSales(from,to){
+    const [sales] = await pool.execute(
+      `SELECT receipt_number, DATE_FORMAT(purchase_date, '%Y-%m-%d') AS date, purchase_total
+       FROM purchase_history
+       WHERE DATE(purchase_date) BETWEEN ? AND ?
+       ORDER BY purchase_date`,
+      [from, to]
+    );
+    return sales
+}
+
+export async function getCashflowExpenses(from,to){
+    const [expenses] = await pool.execute(
+      `SELECT biller, expense_decs, DATE_FORMAT(expense_date, '%Y-%m-%d') AS date, expense_amount
+       FROM expenses
+       WHERE DATE(expense_date) BETWEEN ? AND ?
+       ORDER BY expense_date`,
+      [from, to]
+    )
+    return expenses 
+}
