@@ -420,7 +420,7 @@ export async function getLastReceiptNumber(prefix){
 export async function getSalesHistories({ from, to, page, limit, search ,cashierId}) {
     const offset = (page - 1) * limit
 
-    let where = ""
+    let where = "WHERE 1=1"
     let params = []
 
 
