@@ -344,7 +344,7 @@ export async function expenses() {
             MONTHNAME(e.expense_date) AS month,
             SUM(e.expense_amount) AS total_amount
             FROM expenses e
-            GROUP BY MONTH(e.expense_date)
+            GROUP BY MONTH(e.expense_date),MONTHNAME(e.expense_date)
             ORDER BY MONTH(e.expense_date)`)
             return result
     } catch (error) {
