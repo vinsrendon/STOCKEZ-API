@@ -4,7 +4,9 @@ const {verifyToken} = require('./verify.js')
 const PDFDocument = require('pdfkit')
 const fs = require('fs')
 
-const  { getCashflowRows, getCashflowSales, getCashflowExpenses} = require('../database.js')
+const  { getItemsSold, getCashflowSales, getCashflowExpenses} = require('../database.js')
+
+
 
 router.get("/cashflow/pdf" ,verifyToken, async (req,res) => { 
     try {
@@ -19,54 +21,86 @@ router.get("/cashflow/pdf" ,verifyToken, async (req,res) => {
 
         // Fetch expenses within date range
         const expenses = await getCashflowExpenses(from, to)
+        const items = await getItemsSold(from,to)
+        // console.log(items);
         
         // console.log(sales ,expenses);
         
         // Calculate totals
-        const totalIncome = sales.reduce((sum, s) => sum + parseFloat(s.purchase_total), 0);
+        // const totalIncome = sales.reduce((sum, s) => sum + parseFloat(s.purchase_total), 0);
+        const totalSales = items.reduce((sum, i) => sum + parseFloat(i.sold_price*i.total_quantity), 0);
         const totalExpense = expenses.reduce((sum, e) => sum + parseFloat(e.expense_amount), 0);
-        const netCashFlow = totalIncome - totalExpense;
+        const netCashFlow = totalSales - totalExpense;
 
         // Create PDF
-        const doc = new PDFDocument({ margin: 50, size: "A4" });
+        const doc = new PDFDocument({ margin: 36, size: "A4" });
         doc.font('Helvetica')
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", `attachment; filename=cashflow_${from}_to_${to}.pdf`);
         doc.pipe(res);
-
+doc.text(
+  "NOTE: This document is system-generated.",
+  doc.page.margins.left,
+  20,
+  {
+    align: "center",
+    width: doc.page.width - doc.page.margins.left - doc.page.margins.right
+  }
+);
         doc.fontSize(20).text("Cash Flow Statement", { align: "center" });
         doc.fontSize(12).text(`From: ${from}  To: ${to}`, { align: "center" });
         doc.moveDown();
 
         // Income Table
         doc.font('Helvetica-Bold')
-        doc.fontSize(16).text("Income", { underline: true ,align:'center'});
+        doc.fontSize(16).text("Inflow", { underline: true ,align:'center'});
         let y = doc.y + 10;
 
         doc.font('Helvetica')
-        const incometableData = [
+        // const incometableData = [
+        //     [
+        //         {text:"Receipt",align:'center'},
+        //         {text:"Date",align:'center'},
+        //         {text:"Amount",align:'center'}
+        //     ],
+        //     ...sales.map(s => ([
+        //         {text:s.receipt_number,align:'center'},
+        //         {text:s.date,align:'center'},
+        //         {text: `Php. ${parseFloat(s.purchase_total).toFixed(2)}`,align:'center'}
+        //     ]))
+        // ]
+        // doc.fontSize(12).table({
+        //     rowStyles: (i) => {                
+        //         return i < 1 ? { border: [0, 0, 1, 0] } : { border: false }
+        //     },
+        //     columnStyles: ["*","*","*"],
+        //     data: incometableData
+        // })
+        const itemsTableData = [
             [
-                {text:"Receipt",align:'center'},
-                {text:"Date",align:'center'},
-                {text:"Amount",align:'center'}
+                {text:"Barcode",align:'center'},
+                {text:"Description",align:'center'},
+                {text:"Price",align:'center'},
+                {text:"Amount",align:'center'},
+                {text:"Total",align:'center'},
             ],
-            ...sales.map(s => ([
-                {text:s.receipt_number,align:'center'},
-                {text:s.date,align:'center'},
-                {text: `Php. ${parseFloat(s.purchase_total).toFixed(2)}`,align:'center'}
+            ...items.map(i => ([
+                {text:i.barcode,align:'center'},
+                {text:i.description,align:'left'},
+                {text: `Php. ${parseFloat(i.sold_price).toFixed(2)}`,align:'center'},
+                {text:i.total_quantity,align:'center'},
+                {text: `Php. ${parseFloat(Number(i.sold_price*i.total_quantity)).toFixed(2)}`,align:'left'}
             ]))
         ]
         doc.fontSize(12).table({
-            rowStyles: (i) => {                
-                return i < 1 ? { border: [0, 0, 1, 0] } : { border: false }
-            },
-            columnStyles: ["*","*","*"],
-            data: incometableData
+            
+            columnStyles: ["*","*","*",50,"*"],
+            data: itemsTableData
         })
         doc.moveDown(4)
 
         // Expenses Table
-        doc.fontSize(16).text("Expenses", { underline: true, align:'center' });
+        doc.fontSize(16).text("Outflow", { underline: true, align:'center' });
         y = doc.y + 10;
         const expenesetableData = [
             [
@@ -83,17 +117,17 @@ router.get("/cashflow/pdf" ,verifyToken, async (req,res) => {
             ]))
         ]
         doc.fontSize(12).table({
-            rowStyles: (i) => {                
-                return i < 1 ? { border: [0, 0, 1, 0] } : { border: false }
-            },
-            columnStyles: ["*","*","*","*"],
+            // rowStyles: (i) => {                
+            //     return i < 1 ? { border: [0, 0, 1, 0] } : { border: false }
+            // },
+            columnStyles: ["*","*",70,"*"],
             data: expenesetableData
         })
 
         doc.moveDown(2)
 
         // Totals
-        doc.fontSize(14).text(`Total Income: Php.${totalIncome.toFixed(2)}`);
+        doc.fontSize(14).text(`Total Sales: Php.${totalSales.toFixed(2)}`);
         doc.text(`Total Expenses: Php. ${totalExpense.toFixed(2)}`);
         doc.text(`Net Cash Flow: Php. ${netCashFlow.toFixed(2)}`, { underline: true });
 

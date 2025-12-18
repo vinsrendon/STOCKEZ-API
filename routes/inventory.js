@@ -5,8 +5,35 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 
-const  { getStockMovement, addProduct, getProducts, addBatch, getBatch, getItem, mostSoldToday, mostSoldMonth, lowStockAlert, getCategories, addCategory, dltCategory, getUOM, addUOM, dltUOM, itemsSold} = require('../database.js')
+const  { getStockMovement, addProduct, getProducts, addBatch, getBatch, getItem, mostSoldToday, mostSoldMonth, lowStockAlert, getCategories, addCategory, dltCategory, getUOM, addUOM, dltUOM, itemsSold, countSoldToday, countSoldWeek} = require('../database.js')
 const { verifyToken } = require("./verify.js")
+
+router.get('/countsoldtoday',verifyToken, async (req,res) =>{
+    try {
+        const count = await countSoldToday()     
+        if (!count || count.length === 0) {
+            return res.status(203).json({
+                message: "NO COUNT TODAY"
+            });
+        }
+        return res.status(200).json(count);
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
+router.get('/countsoldweek',verifyToken, async (req,res) =>{
+    try {
+        const count = await countSoldWeek()     
+        if (!count || count.length === 0) {
+            return res.status(203).json({
+                message: "NO COUNT TODAY"
+            });
+        }
+        return res.status(200).json(count);
+    } catch (err) {
+        return res.status(500).json({message: "UNEXPECTED ERROR OCCURED", error:err})
+    }
+})
 
 router.get('/stockMovement',verifyToken, async (req,res) =>{
     const {pid} = req.query       

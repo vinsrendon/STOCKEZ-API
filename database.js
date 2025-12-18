@@ -247,7 +247,7 @@ export async function lowStockAlert(){
         FROM products p
         JOIN product_batches pb ON p.product_id = pb.product_id
         GROUP BY p.product_id, p.barcode, p.description 
-        HAVING SUM(pb.quantity) <= 20
+        HAVING SUM(pb.quantity) <= 10
         ORDER BY p.product_id ASC`)
         return result
     } catch (error) {
@@ -347,6 +347,34 @@ export async function expenses() {
             GROUP BY MONTH(e.expense_date),MONTHNAME(e.expense_date)
             ORDER BY MONTH(e.expense_date)`)
             return result
+    } catch (error) {
+        throw error
+    }
+}
+
+export async function countSoldToday() {
+    try {
+        const [count] = await pool.execute(`SELECT
+            COALESCE(SUM(phi.qty), 0) AS items_sold_today
+            FROM purchase_history ph
+            JOIN purchase_history_items phi
+                ON ph.purchase_id = phi.purchase_id
+            WHERE DATE(ph.purchase_date) = CURDATE()`)
+        return count
+    } catch (error) {
+        throw error
+    }
+}
+
+export async function countSoldWeek() {
+    try {
+        const [count] = await pool.execute(`SELECT
+        COALESCE(SUM(phi.qty), 0) AS items_sold_this_week
+        FROM purchase_history ph
+        JOIN purchase_history_items phi
+            ON ph.purchase_id = phi.purchase_id
+        WHERE YEARWEEK(ph.purchase_date, 1) = YEARWEEK(CURDATE(), 1)`)
+        return count
     } catch (error) {
         throw error
     }
@@ -512,8 +540,28 @@ export async function getCashiesSessionInfo(cs_id) {
 
 //CASHFLOW
 
-export async function getCashflowRows(from,to) {
-  
+export async function getItemsSold(from,to) {
+  const [items] = await pool.execute(
+        `SELECT 
+            p.barcode,
+            p.description,
+            b.sell_price AS sold_price,
+            SUM(phi.qty) AS total_quantity
+        FROM purchase_history ph
+        JOIN purchase_history_items phi 
+            ON ph.purchase_id = phi.purchase_id
+        JOIN product_batches b 
+            ON phi.batch_id = b.batch_id
+        JOIN products p 
+            ON b.product_id = p.product_id
+        WHERE ph.purchase_date BETWEEN ? AND ?
+        GROUP BY 
+            p.product_id,
+            b.sell_price
+        ORDER BY total_quantity DESC`,
+      [from, to]
+    )
+    return items
 }
 
 export async function getCashflowSales(from,to){
