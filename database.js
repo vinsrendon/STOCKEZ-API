@@ -445,7 +445,7 @@ export async function getSalesHistories({ from, to, page, limit, search ,cashier
         `SELECT COUNT(*) AS total FROM purchase_history`)
 
         const total = countRows[0].total
-        
+
         const [rows] = await pool.execute(
             `SELECT 
                 purchase_Id,
@@ -454,9 +454,7 @@ export async function getSalesHistories({ from, to, page, limit, search ,cashier
                 DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date
             FROM purchase_history
             ORDER BY purchase_date DESC
-            LIMIT ? OFFSET ?`,
-            [limit, offset]
-        )
+            LIMIT ? OFFSET ?`,[limit, offset])
         return { data: rows, total, page, limit }
     }
     else{
