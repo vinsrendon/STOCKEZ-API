@@ -417,116 +417,65 @@ export async function getLastReceiptNumber(prefix){
     return rows
 }
 
-// export async function getSalesHistories({ from, to, page, limit, search ,cashierId}) {
-//     const offset = (page - 1) * limit
+export async function getSalesHistories({ from, to, page, limit, search ,cashierId}) {
+    const offset = (page - 1) * limit
 
-//     let where = ""
-//     let params = []
+    let where = ""
+    let params = []
 
-
-//     if (search) {
-//         where += " AND receipt_number LIKE ?"
-//         params.push(`%${search}%`)
-//     }
-
-//     if (cashierId) {
-//         where += " AND cashier_id = ?"
-//         params.push(cashierId)
-//     }
-
-//     if (from && to) {
-//         where += " AND DATE(purchase_date) BETWEEN ? AND ?"
-//         params.push(from, to)
-//     } 
-
-    
-//     if(where === ""){
-//         const [countRows] = await pool.execute(
-//         `SELECT COUNT(*) AS total FROM purchase_history`)
-
-//         const total = countRows[0].total
-
-//         const [rows] = await pool.execute(
-//             `SELECT 
-//                 purchase_Id,
-//                 receipt_number,
-//                 purchase_date,
-//                 DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date
-//             FROM purchase_history
-//             ORDER BY purchase_date DESC
-//             LIMIT ? OFFSET ?`,[limit, offset])
-//         return { data: rows, total, page, limit }
-//     }
-//     else{
-//         const [countRows] = await pool.execute(
-//             `SELECT COUNT(*) AS total FROM purchase_history ${where}`,params)
-            
-//        const [rows] = await pool.execute(
-//             `SELECT 
-//                 purchase_Id,
-//                 receipt_number,
-//                 purchase_date,
-//                 DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date
-//             FROM purchase_history
-//             ${where}
-//             ORDER BY purchase_date DESC
-//             LIMIT ? OFFSET ?`,
-//             [...params, limit, offset]
-//         )
-//         return { data: rows, total, page, limit }
-//     }      
-    
-
-
-    
-// }
-
-export async function getSalesHistories({ from, to, page, limit, search, cashierId }) {
-    const offset = (page - 1) * limit;
-
-    let where = ""; // initialize properly
-    const params = [];
 
     if (search) {
-        where += " AND receipt_number LIKE ?";
-        params.push(`%${search}%`);
+        where += " AND receipt_number LIKE ?"
+        params.push(`%${search}%`)
     }
 
     if (cashierId) {
-        where += " AND cashier_id = ?";
-        params.push(cashierId);
+        where += " AND cashier_id = ?"
+        params.push(cashierId)
     }
 
     if (from && to) {
-        where += " AND DATE(purchase_date) BETWEEN ? AND ?";
-        params.push(from, to);
+        where += " AND DATE(purchase_date) BETWEEN ? AND ?"
+        params.push(from, to)
+    } 
+
+    
+    if(where === ""){
+        const [countRows] = await pool.execute(
+        `SELECT COUNT(*) AS total FROM purchase_history`)
+
+        const total = countRows[0].total
+
+        const [rows] = await pool.execute(
+            `SELECT 
+                purchase_Id,
+                receipt_number,
+                purchase_date,
+                DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date
+            FROM purchase_history
+            ORDER BY purchase_date DESC
+            LIMIT ? OFFSET ?`,[limit, offset])
+        return { data: rows, total, page, limit }
     }
-
-    // prepend WHERE if there are conditions
-    const whereClause = where ? "WHERE 1=1" + where : "";
-
-    // total count
-    const [countRows] = await pool.execute(
-        `SELECT COUNT(*) AS total FROM purchase_history ${whereClause}`,
-        params
-    );
-    const total = countRows[0].total;
-
-    // fetch data
-    const [rows] = await pool.execute(
-        `SELECT 
-            purchase_Id,
-            receipt_number,
-            purchase_date,
-            DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date
-        FROM purchase_history
-        ${whereClause}
-        ORDER BY purchase_date DESC
-        LIMIT ? OFFSET ?`,
-        [...params, limit, offset]
-    );
-
-    return { data: rows, total, page, limit };
+    else{
+        const [countRows] = await pool.execute(`SELECT COUNT(*) AS total FROM purchase_history ${where}`,params)
+        
+        const total = countRows[0].total
+            
+        const [rows] = await pool.execute(
+            `SELECT 
+                purchase_Id,
+                receipt_number,
+                purchase_date,
+                DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date
+            FROM purchase_history
+            ${where}
+            ORDER BY purchase_date DESC
+            LIMIT ? OFFSET ?`,
+            [...params, limit, offset]
+        )
+        return { data: rows, total, page, limit }
+    }        
 }
 
 export async function getSalesHistory(hId){
