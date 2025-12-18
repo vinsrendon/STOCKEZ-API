@@ -452,7 +452,7 @@ export async function getSalesHistories({ from, to, page, limit, search ,cashier
             DATE_FORMAT(purchase_date, '%M %d, %Y %h:%i %p') AS formatted_purchase_date 
             FROM purchase_history 
             ORDER BY purchase_date DESC
-            LIMIT ? OFFSET ?`,[limit, offset])
+            LIMIT ${parseInt(limit, 10)} OFFSET ${parseInt(offset, 10)}`)
 
         return { data: rows, total, page, limit }
     }
@@ -470,8 +470,8 @@ export async function getSalesHistories({ from, to, page, limit, search ,cashier
             FROM purchase_history
             ${where}
             ORDER BY purchase_date DESC
-            LIMIT ? OFFSET ?`,
-            [...params, limit, offset]
+            LIMIT ${parseInt(limit, 10)} OFFSET ${parseInt(offset, 10)}`,
+            [...params]
         )
         return { data: rows, total, page, limit }
     }        
