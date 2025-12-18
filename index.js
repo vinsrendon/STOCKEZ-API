@@ -13,6 +13,8 @@ const app = express()
 app.use(
   cors({
     origin: function (origin, callback) {
+      console.log(origin);
+      
       if (!origin || origin.match(/^http?:\/\/.*:5173$/) || origin.match(/^http?:\/\/.*:4173$/)) {
         callback(null, true);
       } 
@@ -35,30 +37,30 @@ app.use((req, res, next) => {
 })
 
 const server = http.createServer(app)
-// const io = new Server(server, {
-//   cors: {
-//     origin: function (origin, callback) {
-//       if (!origin || origin.match(/^http?:\/\/.*:5173$/) || origin.match(/^http?:\/\/.*:4173$/)) {
-//         callback(null, true);
-//       } 
-//       else if(allowedOrigins.includes(origin)){
-//         callback(null, true);
-//       }
-//       else {
-//         callback(new Error("Not allowed by CORS"));
-//       }
-//     },
-//     methods: ['GET', 'POST'],
-//     credentials:true,
-//   }
-// })
 const io = new Server(server, {
   cors: {
-    origin: "*",
-    methods: ["GET","POST"],
-    credentials: true,
+    origin: function (origin, callback) {
+      if (!origin || origin.match(/^http?:\/\/.*:5173$/) || origin.match(/^http?:\/\/.*:4173$/)) {
+        callback(null, true);
+      } 
+      else if(allowedOrigins.includes(origin)){
+        callback(null, true);
+      }
+      else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ['GET', 'POST'],
+    credentials:true,
   }
 })
+// const io = new Server(server, {
+//   cors: {
+//     origin: "*",
+//     methods: ["GET","POST"],
+//     credentials: true,
+//   }
+// })
 
 io.on('connection', (socket) => {
   // console.log('🟢 Client connected:', socket.id)
