@@ -241,12 +241,12 @@ export async function lowStockAlert(){
         p.product_id,
         p.barcode,
         p.description,
-        MIN(pb.batch_id) AS batch_id, -- optional, usually not meaningful
-        MIN(pb.quantity) AS quantity, -- last seen quantity, probably not useful
+        MIN(pb.batch_id) AS batch_id, 
+        MIN(pb.quantity) AS quantity, 
         SUM(pb.quantity) AS totalQty
         FROM products p
         JOIN product_batches pb ON p.product_id = pb.product_id
-        GROUP BY p.product_id, p.barcode, p.description  -- must include non-aggregated columns
+        GROUP BY p.product_id, p.barcode, p.description 
         HAVING SUM(pb.quantity) <= 20
         ORDER BY p.product_id ASC`)
         return result
@@ -307,33 +307,34 @@ export async function dltUOM(uom_id){
     }
 }
 
-export async function itemsSold() {    
+// export async function itemsSold() {    
+//     try {        
+//         const [result] = await pool.execute(`SELECT 
+//             MONTHNAME(p.purchase_date) AS month,
+//             SUM(hi.qty) AS total_sold
+//             FROM purchase_history_items hi
+//             JOIN purchase_history p ON hi.purchase_id = p.purchase_id
+//             GROUP BY MONTH(p.purchase_date)
+//             ORDER BY MONTH(p.purchase_date)`)
+//             return result
+//     } catch (error) {
+//         throw error
+//     }
+// }
+export async function itemsSold() {
     try {
-        const [result] = await pool.execute(`SELECT
-            YEAR(p.purchase_date)        AS year,
-            MONTH(p.purchase_date)       AS month_index,
-            DATE_FORMAT(p.purchase_date, '%b') AS month_label,
-            SUM(hi.qty)                  AS total_sold
+        const [result] = await pool.execute(`
+            SELECT 
+                MONTHNAME(p.purchase_date) AS month,
+                SUM(hi.qty) AS total_sold
             FROM purchase_history_items hi
-            JOIN purchase_history p
-            ON hi.purchase_id = p.purchase_id
-            WHERE p.purchase_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-            GROUP BY
-            YEAR(p.purchase_date),
-            MONTH(p.purchase_date)
-            ORDER BY
-            YEAR(p.purchase_date),
-            MONTH(p.purchase_date)`)
-        // const [result] = await pool.execute(`SELECT 
-        //     MONTHNAME(p.purchase_date) AS month,
-        //     SUM(hi.qty) AS total_sold
-        //     FROM purchase_history_items hi
-        //     JOIN purchase_history p ON hi.purchase_id = p.purchase_id
-        //     GROUP BY MONTH(p.purchase_date)
-        //     ORDER BY MONTH(p.purchase_date)`)
-            return result
+            JOIN purchase_history p ON hi.purchase_id = p.purchase_id
+            GROUP BY MONTH(p.purchase_date), MONTHNAME(p.purchase_date)
+            ORDER BY MONTH(p.purchase_date)
+        `);
+        return result;
     } catch (error) {
-        throw error
+        throw error;
     }
 }
 
