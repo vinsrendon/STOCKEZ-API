@@ -309,13 +309,25 @@ export async function dltUOM(uom_id){
 
 export async function itemsSold() {    
     try {
-        const [result] = await pool.execute(`SELECT 
-            MONTHNAME(p.purchase_date) AS month,
+        const [result] = await pool.execute(`SELECT
+            DATE_FORMAT(p.purchase_date, '%Y-%m') AS month,
             SUM(hi.qty) AS total_sold
             FROM purchase_history_items hi
-            JOIN purchase_history p ON hi.purchase_id = p.purchase_id
-            GROUP BY MONTH(p.purchase_date)
-            ORDER BY MONTH(p.purchase_date)`)
+            JOIN purchase_history p
+            ON hi.purchase_id = p.purchase_id
+            GROUP BY
+            YEAR(p.purchase_date),
+            MONTH(p.purchase_date)
+            ORDER BY
+            YEAR(p.purchase_date),
+            MONTH(p.purchase_date)`)
+        // const [result] = await pool.execute(`SELECT 
+        //     MONTHNAME(p.purchase_date) AS month,
+        //     SUM(hi.qty) AS total_sold
+        //     FROM purchase_history_items hi
+        //     JOIN purchase_history p ON hi.purchase_id = p.purchase_id
+        //     GROUP BY MONTH(p.purchase_date)
+        //     ORDER BY MONTH(p.purchase_date)`)
             return result
     } catch (error) {
         throw error
