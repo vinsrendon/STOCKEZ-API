@@ -178,7 +178,7 @@ router.post("/set-backup-time", verifyToken, async (req, res) => {
 
     await loadBackupSchedule()
 
-    return res.status(200).json({ message: "Backup time updated", time })
+    return res.status(200).json({ message: "Backup time/status updated", time })
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Failed to set backup time" });

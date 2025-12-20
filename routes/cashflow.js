@@ -68,7 +68,7 @@ router.get("/cashflow/pdf" ,verifyToken, async (req,res) => {
 
         // Income Table
         doc.font('Helvetica-Bold')
-        doc.fontSize(16).text("Inflow", { underline: true ,align:'center'});
+        doc.fontSize(16).text("CASH INFLOW", { underline: true ,align:'center'});
         let y = doc.y + 10;
 
         doc.font('Helvetica')
@@ -115,7 +115,9 @@ router.get("/cashflow/pdf" ,verifyToken, async (req,res) => {
         doc.moveDown(4)
 
         // Expenses Table
-        doc.fontSize(16).text("Outflow", { underline: true, align:'center' });
+        doc.font('Helvetica-Bold')
+        doc.fontSize(16).text("EXPENSES", { underline: true, align:'center' });
+        doc.font('Helvetica')
         y = doc.y + 10;
         const expenesetableData = [
             [
