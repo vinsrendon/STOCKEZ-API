@@ -39,23 +39,16 @@ router.get("/cashflow/pdf" ,verifyToken, async (req,res) => {
         return res.status(400).send("Please provide 'from' and 'to' dates in YYYY-MM-DD format");
         }
 
-        // Fetch sales within date range
         const sales = await getCashflowSales(from, to)    
 
-        // Fetch expenses within date range
         const expenses = await getCashflowExpenses(from, to)
         const items = await getItemsSold(from,to)
-        // console.log(items);
         
-        // console.log(sales ,expenses);
         
-        // Calculate totals
-        // const totalIncome = sales.reduce((sum, s) => sum + parseFloat(s.purchase_total), 0);
         const totalSales = items.reduce((sum, i) => sum + parseFloat(i.sold_price*i.total_quantity), 0);
         const totalExpense = expenses.reduce((sum, e) => sum + parseFloat(e.expense_amount), 0);
         const netCashFlow = totalSales - totalExpense;
 
-        // Create PDF
         const doc = new PDFDocument({ margin: 36, size: "A4" });
         doc.font('Helvetica')
         res.setHeader("Content-Type", "application/pdf");
@@ -66,31 +59,11 @@ router.get("/cashflow/pdf" ,verifyToken, async (req,res) => {
         doc.fontSize(12).text(`From: ${from}  To: ${to}`, { align: "center" });
         doc.moveDown();
 
-        // Income Table
         doc.font('Helvetica-Bold')
         doc.fontSize(16).text("CASH INFLOW", { underline: true ,align:'center'});
         let y = doc.y + 10;
 
         doc.font('Helvetica')
-        // const incometableData = [
-        //     [
-        //         {text:"Receipt",align:'center'},
-        //         {text:"Date",align:'center'},
-        //         {text:"Amount",align:'center'}
-        //     ],
-        //     ...sales.map(s => ([
-        //         {text:s.receipt_number,align:'center'},
-        //         {text:s.date,align:'center'},
-        //         {text: `Php. ${parseFloat(s.purchase_total).toFixed(2)}`,align:'center'}
-        //     ]))
-        // ]
-        // doc.fontSize(12).table({
-        //     rowStyles: (i) => {                
-        //         return i < 1 ? { border: [0, 0, 1, 0] } : { border: false }
-        //     },
-        //     columnStyles: ["*","*","*"],
-        //     data: incometableData
-        // })
         const itemsTableData = [
             [
                 {text:"Barcode",align:'center'},
@@ -114,7 +87,6 @@ router.get("/cashflow/pdf" ,verifyToken, async (req,res) => {
         })
         doc.moveDown(4)
 
-        // Expenses Table
         doc.font('Helvetica-Bold')
         doc.fontSize(16).text("EXPENSES", { underline: true, align:'center' });
         doc.font('Helvetica')
@@ -134,16 +106,12 @@ router.get("/cashflow/pdf" ,verifyToken, async (req,res) => {
             ]))
         ]
         doc.fontSize(12).table({
-            // rowStyles: (i) => {                
-            //     return i < 1 ? { border: [0, 0, 1, 0] } : { border: false }
-            // },
             columnStyles: ["*","*",70,"*"],
             data: expenesetableData
         })
 
         doc.moveDown(2)
 
-        // Totals
         doc.fontSize(14).text(`Total Sales: Php.${totalSales.toFixed(2)}`);
         doc.text(`Total Expenses: Php. ${totalExpense.toFixed(2)}`);
         doc.text(`Cash Flow: Php. ${netCashFlow.toFixed(2)}`, { underline: true });

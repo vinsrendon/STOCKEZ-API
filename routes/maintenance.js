@@ -71,10 +71,8 @@ router.post("/restore",verifyToken, async (req, res) => {
       multipleStatements: true,
     });
 
-    // Start transaction
     await connection.beginTransaction();
 
-    // Drop all tables first
     const [tables] = await connection.query("SHOW TABLES");
     const tableNames = tables.map(row => Object.values(row)[0]);
     if (tableNames.length) {
@@ -85,13 +83,10 @@ router.post("/restore",verifyToken, async (req, res) => {
       await connection.query(`SET FOREIGN_KEY_CHECKS = 1;`);
     }
 
-    // Read the SQL file
     let sql = fs.readFileSync(backupFile, 'utf8');
 
-    // Execute the SQL statements
     await connection.query(sql);
 
-    // Commit transaction
     await connection.commit();
     await connection.end();
 
@@ -101,7 +96,7 @@ router.post("/restore",verifyToken, async (req, res) => {
     console.error("Restore failed:", error);
     if (connection) {
       try {
-        await connection.rollback(); // rollback if any error occurs
+        await connection.rollback()
         await connection.end();
       } catch (rollbackError) {
         console.error("Rollback failed:", rollbackError);
@@ -112,15 +107,13 @@ router.post("/restore",verifyToken, async (req, res) => {
 })
 
 router.get("/backups",verifyToken, (req, res) => {
-  try {
-    // Ensure directory exists
+  try {    
     if (!fs.existsSync(BACKUP_DIR)) {
       return res.status(404).json({ message: "No backup folder found" });
     }
 
-    // Read all files in the backup directory
     const files = fs.readdirSync(BACKUP_DIR)
-      .filter(file => file.endsWith(".sql") || file.endsWith(".sql.gz")) // filter SQL files
+      .filter(file => file.endsWith(".sql") || file.endsWith(".sql.gz"))
       .map(file => {
         const filePath = path.join(BACKUP_DIR, file);
         const stats = fs.statSync(filePath);
@@ -128,11 +121,11 @@ router.get("/backups",verifyToken, (req, res) => {
         return {
           name: file,
           size: (stats.size / 1024).toFixed(2) + " KB",
-          createdAt: stats.birthtime, // or stats.mtime for last modified
+          createdAt: stats.birthtime,
           path: filePath
         };
       })
-      .sort((a, b) => b.createdAt - a.createdAt); // newest first
+      .sort((a, b) => b.createdAt - a.createdAt);
 
     return res.status(200).json({ backups: files });
   } catch (err) {
@@ -146,7 +139,6 @@ router.delete("/backups/:filename",verifyToken, (req, res) => {
     const { filename } = req.params;
     const filePath = path.join(BACKUP_DIR, filename);
 
-    // Prevent directory traversal (security check)
     if (!filePath.startsWith(BACKUP_DIR)) {
       return res.status(400).json({ message: "Invalid file path" });
     }
@@ -231,8 +223,7 @@ async function loadBackupSchedule() {
 
     if (!rows.length) return
 
-    const { time, enabled } = rows[0];
-    // console.log(time,enabled);
+    const { time, enabled } = rows[0]
 
     if (enabled) startBackup(time)
 

@@ -12,9 +12,7 @@ const app = express()
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // console.log(origin);
-      
+    origin: function (origin, callback) {      
       if (!origin || origin.match(/^http?:\/\/.*:5173$/) || origin.match(/^http?:\/\/.*:4173$/)) {
         callback(null, true);
       } 
@@ -54,24 +52,14 @@ const io = new Server(server, {
     credentials:true,
   }
 })
-// const io = new Server(server, {
-//   cors: {
-//     origin: "*",
-//     methods: ["GET","POST"],
-//     credentials: true,
-//   }
-// })
 
 io.on('connection', (socket) => {
-  // console.log('🟢 Client connected:', socket.id)
 
   socket.on('join-checkout', (checkoutSessionId) => {
     socket.join(checkoutSessionId)
-    // console.log(`Client joined room: ${checkoutSessionId}`)
   })
 
   socket.on('disconnect', () => {
-    // console.log('🔴 Client disconnected:', socket.id)
   })
 })
 app.set('io', io)

@@ -12,7 +12,6 @@ const { verifyToken } = require("./verify.js")
 
 router.get("/checkpistat", verifyToken, async (req, res) => {
     const { piid } = req.query
-    // console.log("checkoutSessionsId:",piid);
     
     const auth = Buffer.from(PAYMONGO_KEY + ':').toString('base64')
     const options = {
@@ -27,7 +26,6 @@ router.get("/checkpistat", verifyToken, async (req, res) => {
     axios
     .request(options)
     .then((response) => {
-        // console.log(response.data)
         return res.status(200).json(response.data);
     })
     .catch(err => console.log(err));
@@ -70,7 +68,6 @@ router.post('/create-checkout-session' ,verifyToken, async (req,res) => {
     axios
     .request(options)
     .then((response) => {
-        // console.log(response.data)
         return res.status(200).json(response.data);
     })
     .catch((err) => {
@@ -117,8 +114,6 @@ router.post(
     return res.status(400).send("Invalid JSON");
     }
 
-    // console.log("Full webhook payload:", JSON.stringify(event, null, 2));
-    // console.log(event.data.attributes.type);
     const io = req.app.get('io')
     switch (event.data.attributes.type) {
       case 'payment.paid':        
@@ -149,7 +144,6 @@ function handleCheckoutPaid(data,io) {
     const paidAmount = data.attributes.data.attributes.payments[0].attributes.amount
     const payReference = data.attributes.data.attributes.payments[0].id
 
-    // console.log('✅ Checkout paid:', paymentIntent , " METHOD USED:", methodUsed)
     io.to(paymentIntent).emit('payment-success', {
         paymentIntent,
         payReference,
@@ -160,7 +154,6 @@ function handleCheckoutPaid(data,io) {
 }
 
 function handleCheckoutFailed(data,io) {
-    // console.log('❌ Checkout failed:', data)
     const paymentIntent = data.attributes.data.attributes.payment_intent_id
     const methodUsed = data.attributes.data.attributes.source.type
     io.to(paymentIntent).emit('payment-failed', {

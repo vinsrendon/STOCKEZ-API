@@ -44,26 +44,25 @@ router.post('/savepurchasehistory' ,verifyToken, async (req,res) => {
 async function generateReceiptNumber(){
     const now = new Date()
 
-    const year = now.getFullYear()                            // 2025
-    const month = String(now.getMonth() + 1).padStart(2, "0") // 11 → "11"
+    const year = now.getFullYear()                           
+    const month = String(now.getMonth() + 1).padStart(2, "0") 
 
-    const prefix = `${year}${month}` // "202511"
+    const prefix = `${year}${month}`
     let rows = []
 
-    // Get last receipt code for the same year+month
     rows = await getLastReceiptNumber(prefix)
 
     let newIncrement = 1
 
     if (rows.length > 0) {
-        const lastCode = rows[0].receipt_number.toString() // e.g. 2025110042
-        let lastIncrement = parseInt(lastCode.slice(-4))// get "0042" → 42
+        const lastCode = rows[0].receipt_number.toString()
+        let lastIncrement = parseInt(lastCode.slice(-4))
         newIncrement = lastIncrement + 1        
     }
 
     const receiptCode = `${prefix}${String(newIncrement).padStart(4, "0")}`
     
-    return receiptCode // Example: "2025110043"    
+    return receiptCode 
 }
 
 router.post('/startCashierSession' ,verifyToken, async (req,res) => {
@@ -145,7 +144,6 @@ router.get('/getSalesHistories', verifyToken, async (req, res) => {
 
 router.get('/getSalesHistory' ,verifyToken, async (req,res) => {
     const { hId } = req.query
-    // console.log(hId);
     
     try {
         const history = await getSalesHistory(hId)

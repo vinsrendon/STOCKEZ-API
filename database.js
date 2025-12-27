@@ -307,20 +307,6 @@ export async function dltUOM(uom_id){
     }
 }
 
-// export async function itemsSold() {    
-//     try {        
-//         const [result] = await pool.execute(`SELECT 
-//             MONTHNAME(p.purchase_date) AS month,
-//             SUM(hi.qty) AS total_sold
-//             FROM purchase_history_items hi
-//             JOIN purchase_history p ON hi.purchase_id = p.purchase_id
-//             GROUP BY MONTH(p.purchase_date)
-//             ORDER BY MONTH(p.purchase_date)`)
-//             return result
-//     } catch (error) {
-//         throw error
-//     }
-// }
 export async function itemsSold() {
     try {
         const [result] = await pool.execute(`
@@ -410,9 +396,7 @@ export async function savePurchase(cs_id,receiptNumber,cashier,purchase_total,am
                 const [result] = await conn.execute(`UPDATE product_batches 
                 SET quantity = quantity - ? WHERE batch_id = ? AND quantity >= ?`,[item.quantity, item.batch_id, item.quantity])
                 
-                if (result.affectedRows === 0) {
-                    // console.log("here")
-                    
+                if (result.affectedRows === 0) {                    
                     let err = new Error("Not enough stock in this batch")
                     err.code = "INSUFFICIENT_STOCK"
                     throw err
