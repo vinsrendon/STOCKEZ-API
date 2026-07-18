@@ -12,7 +12,7 @@ npm install
 npm run server
 ```
 
-#API ENV CONTENTS
+# API ENV CONTENTS
 ```
 MODE='DEV'
 PAYMONGO_SECRET_KEY=''
