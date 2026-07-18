@@ -1,4 +1,4 @@
-# stockez_BACKEND
+# StockEZ Backend API
 
 ## Project Setup
 
